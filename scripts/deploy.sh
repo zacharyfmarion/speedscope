@@ -1,62 +1,29 @@
 #!/bin/bash
-#
-# Do a shallow clone of the repository into a temporary directory and copy the
-# artifacts pulled from npm into the shallow clone to commit & push to the
-# gh-pages branch.
 
-set -euxo pipefail
+# Exit if any command fails
+set -e
 
-SRCDIR=`pwd`
-OUTDIR=`mktemp -d -t speedscope-unpacked`
+# Step 1: Create a temporary directory for the build
+TEMP_OUTDIR=$(mktemp -d)
+echo "Temporary output directory: $TEMP_OUTDIR"
 
-# Untar the package
-pushd "$OUTDIR"
-PACKEDNAME=`npm pack speedscope | tail -n1`
-tar -xvvf "$PACKEDNAME"
+# Step 2: Build the project
+node_modules/.bin/parcel build assets/index.html --no-cache --out-dir "$TEMP_OUTDIR" --public-url "./" --detailed-report
 
-# Create a shallow clone of the repository
-TMPDIR=`mktemp -d -t speedscope-deploy`
-pushd "$TMPDIR"
-git clone --depth 1 git@github.com:jlfwong/speedscope.git -b gh-pages
+# Step 3: Checkout gh-pages branch and remove existing files
+git checkout gh-pages
+git rm -rf .
 
-# Copy the build artifacts into the shallow clone
-pushd speedscope
-rm -rf *
-cp -R "$OUTDIR"/package/dist/release/** .
+# Step 4: Copy only files from the temporary output directory to the root of gh-pages branch
+find "$TEMP_OUTDIR" -type f -exec cp {} . \;
 
-# Set the CNAME record
-echo www.speedscope.app > CNAME
+# Step 5: Commit and push changes
+git add .
+git commit -m "Deploying to GitHub Pages"
+git push origin gh-pages
 
-# Set up a handler to run on Ctrl+C
-trap ctrl_c INT
-function ctrl_c() {
-  set +x
-  read -p "Commit release? [yes/no]: "
-  set -x
+# Checkout back to the original branch
+git checkout -
 
-  if [[ $REPLY =~ ^yes$ ]]
-  then
-    git add --all
-    git commit -m "Deploy $PACKEDNAME"
-    git push origin HEAD:gh-pages
-    rm -rf "$TMPDIR"
-    exit 0
-  else
-    set +x
-    echo "Aborting release."
-    set -x
-    rm -rf "$TMPDIR"
-    exit 1
-  fi
-}
-
-# Start a local server for verification of the build
-set +x
-echo
-echo
-echo "Build complete. Starting server on http://localhost:4444/"
-echo "Hit Ctrl+C to complete or cancel the release"
-echo
-echo
-python3 -m http.server 4444
-set +x
+# Optional: Clean up the temporary directory
+rm -rf "$TEMP_OUTDIR"
