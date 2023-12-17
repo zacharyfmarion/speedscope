@@ -14,8 +14,8 @@ node_modules/.bin/parcel build assets/index.html --no-cache --out-dir "$TEMP_OUT
 git checkout gh-pages
 git rm -rf .
 
-# Step 4: Copy only files from the temporary output directory to the root of gh-pages branch
-find "$TEMP_OUTDIR" -type f -exec cp {} . \;
+# Step 4: Copy only files from the temporary output directory to the root of gh-pages branch, excluding node_modules
+find "$TEMP_OUTDIR" -type f ! -path "$TEMP_OUTDIR/node_modules/*" -exec cp {} . \;
 
 # Step 5: Commit and push changes
 git add .
