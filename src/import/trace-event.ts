@@ -229,7 +229,10 @@ function getThreadNamesByPidTid(events: TraceEvent[]): Map<string, string> {
 }
 
 function getEventName(event: TraceEvent): string {
-  return `${event.name || '(unnamed)'}`
+  // Remove stuff in parentheses after the function name (Hermes profiles have this)
+  const strippedName = (event.name ?? '').replace(/\(.*?\)/g, '').trim();
+
+  return `${strippedName || '(unnamed)'}`
 }
 
 function keyForEvent(event: TraceEvent): string {
