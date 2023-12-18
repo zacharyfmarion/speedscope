@@ -108,7 +108,7 @@ function selectQueueToTakeFromNext(
   // to ensure it opens before we try to close it.
   //
   // Otherwise, process the 'E' queue first.
-  return frameInfoForEvent(bFront).key === frameInfoForEvent(eFront).key ? 'B' : 'E'
+  return keyForEvent(bFront) === keyForEvent(eFront) ? 'B' : 'E'
 }
 
 function convertToEventQueues(events: ImportableTraceEvent[]): [BTraceEvent[], ETraceEvent[]] {
@@ -235,16 +235,28 @@ function getEventName(event: TraceEvent): string {
   return `${strippedName || '(unnamed)'}`
 }
 
-function keyForEvent(event: TraceEvent): string {
+type KeyForEventOptions = {
+  omitParent?: boolean,
+}
+
+function keyForEvent(event: TraceEvent, { omitParent }: KeyForEventOptions = {}): string {
   let key = getEventName(event)
   if (event.args) {
-    key += ` ${JSON.stringify(event.args)}`
+    // We include args because it can help differentiate different
+    // anonymous functions. However we want the args for the same function
+    // to be stable. Because of this we omit the "parent" arg from Hermes
+    // profiles since this would result in functions not getting properly
+    // grouped together
+    const { parent, ...args } = event.args;
+    key += ` ${JSON.stringify({ ...args, ...(omitParent ? undefined : { parent }) })}`
   }
   return key
 }
 
 function frameInfoForEvent(event: TraceEvent): FrameInfo {
-  const key = keyForEvent(event)
+  // When grouping frames we want to combine by key, so parent is omitted
+  const key = keyForEvent(event, { omitParent: true });
+
   return {
     name: getEventName(event),
     key: key,
@@ -317,24 +329,24 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
         return
       }
 
-      const eFrameInfo = frameInfoForEvent(e)
-      const bFrameInfo = frameInfoForEvent(b)
+      const eFrameKey = keyForEvent(e)
+      const bFrameKey = keyForEvent(b)
 
       if (e.name !== b.name) {
         console.warn(
-          `ts=${e.ts}: Tried to end "${eFrameInfo.key}" when "${bFrameInfo.key}" was on the top of the stack. Doing nothing instead.`,
+          `ts=${e.ts}: Tried to end "${eFrameKey}" when "${bFrameKey}" was on the top of the stack. Doing nothing instead.`,
         )
         return
       }
 
-      if (eFrameInfo.key !== bFrameInfo.key) {
+      if (eFrameKey !== bFrameKey) {
         console.warn(
-          `ts=${e.ts}: Tried to end "${eFrameInfo.key}" when "${bFrameInfo.key}" was on the top of the stack. Ending ${bFrameInfo.key} instead.`,
+          `ts=${e.ts}: Tried to end "${eFrameKey}" when "${bFrameKey}" was on the top of the stack. Ending ${bFrameKey} instead.`,
         )
       }
 
       frameStack.pop()
-      profile.leaveFrame(bFrameInfo, e.ts)
+      profile.leaveFrame(frameInfoForEvent(b), e.ts)
     }
 
     while (bEventQueue.length > 0 || eEventQueue.length > 0) {
@@ -351,7 +363,7 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
           // match.
           const stackTop = lastOf(frameStack)
           if (stackTop != null) {
-            const bFrameInfo = frameInfoForEvent(stackTop)
+            const bFrameKey = keyForEvent(stackTop)
 
             let swapped: boolean = false
 
@@ -362,8 +374,8 @@ function eventListToProfileGroup(events: TraceEvent[]): ProfileGroup {
                 break
               }
 
-              const eFrameInfo = frameInfoForEvent(eEvent)
-              if (bFrameInfo.key === eFrameInfo.key) {
+              const eFrameKey = keyForEvent(eEvent)
+              if (bFrameKey === eFrameKey) {
                 // We have a match! Process this one first.
                 const temp = eEventQueue[0]
                 eEventQueue[0] = eEventQueue[i]
