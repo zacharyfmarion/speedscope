@@ -260,6 +260,10 @@ function frameInfoForEvent(event: TraceEvent): FrameInfo {
   return {
     name: getEventName(event),
     key: key,
+    // Hermes specific
+    file: event?.args?.url,
+    line: event?.args?.line,
+    col: event?.args?.column,
   }
 }
 
