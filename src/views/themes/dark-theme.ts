@@ -26,25 +26,24 @@ enum Colors {
 // const L_d = 0.1
 
 function colorForBucket(t: number) {
-  // Represents a color in RGB format
   const red = [1.0, 0.0, 0.0]; // Red color
   const green = [0.0, 1.0, 0.0]; // Green color
   const gray = [0.5, 0.5, 0.5]; // Gray color
 
   // Mix function to interpolate between two colors
   const mix = (color1: number[], color2: number[], factor: number) => {
-      return color1.map((c1: number, index: number) => c1 * (1 - factor) + color2[index] * factor);
+      const [r, g, b] = color1.map((c1, index) => c1 * (1 - factor) + color2[index] * factor);
+      return new Color(r, g, b);
   };
 
-  if (t === 1.0) {
-      return gray;
-  }
-  if (t < 0.0) {
-      // Interpolate between gray and red for negative values
-      return mix(gray, red, -t);
+  if (t < 0.5) {
+      // Interpolate between red and gray
+      const mixRatio = 1.0 - (t - 0.1) / (0.5 - 0.1); // Linear transformation
+      return mix(red, gray, mixRatio);
   } else {
-      // Interpolate between gray and green for positive values
-      return mix(gray, green, t);
+      // Interpolate between gray and green
+      const mixRatio = (t - 0.5) / 0.5; // Normalize t to the range [0, 1]
+      return mix(gray, green, mixRatio);
   }
 }
 
