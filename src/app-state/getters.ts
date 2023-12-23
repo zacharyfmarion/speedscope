@@ -113,7 +113,15 @@ export const getFrameToColorBucketCompare = (
 
   scaledDiffs.forEach(({beforeFrame, totalWeightDiff, selfWeightDiff}) => {
     // TODO: Deal with self vs total weight
-    frameToColorBucket.set(beforeFrame.key, selfWeightDiff)
+    // We replace 0 with 1 since 0 is reserved for the background color
+    // And we just need a unique identifier to tell us that there was 
+    // no difference. Also since we scale down the diffs there will never
+    // be a real value mapped to 1
+    const selfDiff = selfWeightDiff === 0 ? 1 : selfWeightDiff;
+    const totalDiff = totalWeightDiff === 0 ? 1 : totalWeightDiff;
+    console.log(selfDiff);
+
+    frameToColorBucket.set(beforeFrame.key, selfDiff)
   })
 
   return frameToColorBucket

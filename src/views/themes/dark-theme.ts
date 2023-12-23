@@ -20,20 +20,33 @@ enum Colors {
   BROWN = '#A66F1C',
 }
 
-const C_0 = 0.2
-const C_d = 0.1
-const L_0 = 0.2
-const L_d = 0.1
+// const C_0 = 0.2
+// const C_d = 0.1
+// const L_0 = 0.2
+// const L_d = 0.1
 
-const colorForBucket = (t: number) => {
+function colorForBucket(t: number) {
   console.log(t);
-  // return Color.fromCSSHex('#000')
-  // Value between -1 and 0 that repeats everytime t increases by 30
-  const x = triangle(30.0 * t)
-  const H = 360.0 * (0.9 * t)
-  const C = C_0 + C_d * x
-  const L = L_0 - L_d * x
-  return Color.fromLumaChromaHue(L, C, H)
+  // Represents a color in RGB format
+  const red = [1.0, 0.0, 0.0]; // Red color
+  const green = [0.0, 1.0, 0.0]; // Green color
+  const gray = [0.5, 0.5, 0.5]; // Gray color
+
+  // Mix function to interpolate between two colors
+  const mix = (color1: number[], color2: number[], factor: number) => {
+      return color1.map((c1: number, index: number) => c1 * (1 - factor) + color2[index] * factor);
+  };
+
+  if (t === 1.0) {
+      return gray;
+  }
+  if (t < 0.0) {
+      // Interpolate between gray and red for negative values
+      return mix(gray, red, -t);
+  } else {
+      // Interpolate between gray and green for positive values
+      return mix(gray, green, t);
+  }
 }
 
 const colorForBucketGLSL = `
@@ -42,6 +55,9 @@ const colorForBucketGLSL = `
     vec3 green = vec3(0.0, 1.0, 0.0); // Green color
     vec3 gray = vec3(0.5, 0.5, 0.5); // Gray color
 
+    if (t == 1.0) {
+      return gray;
+    }
     if (t < 0.0) {
       // Interpolate between gray and red for negative values
       return mix(gray, red, -t);
