@@ -26,24 +26,24 @@ enum Colors {
 // const L_d = 0.1
 
 function colorForBucket(t: number) {
-  const red = [1.0, 0.0, 0.0]; // Red color
-  const green = [0.0, 1.0, 0.0]; // Green color
-  const gray = [0.5, 0.5, 0.5]; // Gray color
+  const red = [1.0, 0.0, 0.0] // Red color
+  const green = [0.0, 1.0, 0.0] // Green color
+  const gray = [0.5, 0.5, 0.5] // Gray color
 
   // Mix function to interpolate between two colors
   const mix = (color1: number[], color2: number[], factor: number) => {
-      const [r, g, b] = color1.map((c1, index) => c1 * (1 - factor) + color2[index] * factor);
-      return new Color(r, g, b);
-  };
+    const [r, g, b] = color1.map((c1, index) => c1 * (1 - factor) + color2[index] * factor)
+    return new Color(r, g, b)
+  }
 
   if (t < 0.5) {
-      // Interpolate between green and gray
-      const mixRatio = 1.0 - (t - 0.1) / (0.5 - 0.1); // Linear transformation
-      return mix(green, gray, mixRatio);
+    // Interpolate between green and gray
+    const mixRatio = 1.0 - (t - 0.1) / (0.5 - 0.1) // Linear transformation
+    return mix(green, gray, mixRatio)
   } else {
-      // Interpolate between gray and red 
-      const mixRatio = (t - 0.5) / 0.5; // Normalize t to the range [0, 1]
-      return mix(gray, red, mixRatio);
+    // Interpolate between gray and red
+    const mixRatio = (t - 0.5) / 0.5 // Normalize t to the range [0, 1]
+    return mix(gray, red, mixRatio)
   }
 }
 
@@ -59,13 +59,13 @@ const colorForBucketGLSL = `
       return mix(vec3(0.5, 0.5, 0.5), vec3(1.0, 0.0, 0.0), mixRatio);
     }
   }
-`;
+`
 
-    // float x = triangle(30.0 * t);
-    // float H = 360.0 * (0.9 * t);
-    // float C = ${C_0.toFixed(1)} + ${C_d.toFixed(1)} * x;
-    // float L = ${L_0.toFixed(1)} - ${L_d.toFixed(1)} * x;
-    // return hcl2rgb(H, C, L);
+// float x = triangle(30.0 * t);
+// float H = 360.0 * (0.9 * t);
+// float C = ${C_0.toFixed(1)} + ${C_d.toFixed(1)} * x;
+// float L = ${L_0.toFixed(1)} - ${L_d.toFixed(1)} * x;
+// return hcl2rgb(H, C, L);
 
 export const darkTheme: Theme = {
   fgPrimaryColor: Colors.LIGHTER_GRAY,

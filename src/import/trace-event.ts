@@ -264,7 +264,7 @@ function keyForEvent(event: TraceEvent): string {
   let name = `${event.name || '(unnamed)'}`
   if (event.args) {
     // TODO: This is just a special case for how the transformer works in hermes
-    const { parent, ...usableArgs }  = event.args;
+    const {parent, ...usableArgs} = event.args
     name += ` ${JSON.stringify(usableArgs)}`
   }
   return name
