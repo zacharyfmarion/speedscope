@@ -272,6 +272,18 @@ export class Profile {
     this.frames.forEach(fn)
   }
 
+  // TODO: I'm sure there is a better way to do this, + we should memoize
+  // and only do this work once
+  getFrameMap() {
+    const map = new Map<string | number, Frame>()
+
+    this.forEachFrame(f => {
+      map.set(f.key, f)
+    })
+
+    return map
+  }
+
   getProfileWithRecursionFlattened(): Profile {
     const builder = new CallTreeProfileBuilder()
 

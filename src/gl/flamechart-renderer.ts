@@ -177,7 +177,8 @@ export class FlamechartRenderer {
         const color = new Color(
           (1 + (i % 255)) / 256,
           (1 + (stackDepth % 255)) / 256,
-          (1 + this.flamechart.getColorBucketForFrame(frame.node.frame)) / 256,
+          // TODO: Make this different based on the view
+          this.flamechart.getColorBucketForFrame(frame.node.frame),
         )
         batch.addRect(configSpaceBounds, color)
         rectCount++

@@ -26,21 +26,37 @@ const L_0 = 0.2
 const L_d = 0.1
 
 const colorForBucket = (t: number) => {
+  console.log(t);
+  // return Color.fromCSSHex('#000')
+  // Value between -1 and 0 that repeats everytime t increases by 30
   const x = triangle(30.0 * t)
   const H = 360.0 * (0.9 * t)
   const C = C_0 + C_d * x
   const L = L_0 - L_d * x
   return Color.fromLumaChromaHue(L, C, H)
 }
+
 const colorForBucketGLSL = `
   vec3 colorForBucket(float t) {
-    float x = triangle(30.0 * t);
-    float H = 360.0 * (0.9 * t);
-    float C = ${C_0.toFixed(1)} + ${C_d.toFixed(1)} * x;
-    float L = ${L_0.toFixed(1)} - ${L_d.toFixed(1)} * x;
-    return hcl2rgb(H, C, L);
+    vec3 red = vec3(1.0, 0.0, 0.0); // Red color
+    vec3 green = vec3(0.0, 1.0, 0.0); // Green color
+    vec3 gray = vec3(0.5, 0.5, 0.5); // Gray color
+
+    if (t < 0.0) {
+      // Interpolate between gray and red for negative values
+      return mix(gray, red, -t);
+    } else {
+      // Interpolate between gray and green for positive values
+      return mix(gray, green, t);
+    }
   }
-`
+`;
+
+    // float x = triangle(30.0 * t);
+    // float H = 360.0 * (0.9 * t);
+    // float C = ${C_0.toFixed(1)} + ${C_d.toFixed(1)} * x;
+    // float L = ${L_0.toFixed(1)} - ${L_d.toFixed(1)} * x;
+    // return hcl2rgb(H, C, L);
 
 export const darkTheme: Theme = {
   fgPrimaryColor: Colors.LIGHTER_GRAY,

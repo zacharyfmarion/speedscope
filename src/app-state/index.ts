@@ -20,6 +20,9 @@ export const viewModeAtom = new Atom<ViewMode>(ViewMode.CHRONO_FLAME_CHART, 'vie
 // The top-level profile group from which most other data will be derived
 export const profileGroupAtom = new ProfileGroupAtom(null, 'profileGroup')
 
+// The top-level profile group from which most other data will be derived
+export const compareProfileGroupAtom = new ProfileGroupAtom(null, 'compareProfileGroup')
+
 viewModeAtom.subscribe(() => {
   // If we switch views, the hover information is no longer relevant
   profileGroupAtom.clearHoverNode()

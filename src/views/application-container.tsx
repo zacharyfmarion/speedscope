@@ -4,6 +4,7 @@ import {memo, useMemo} from 'preact/compat'
 import {useActiveProfileState} from '../app-state/active-profile-state'
 import {useTheme} from './themes/theme'
 import {
+  compareProfileGroupAtom,
   dragActiveAtom,
   errorAtom,
   flattenRecursionAtom,
@@ -34,6 +35,7 @@ export const ApplicationContainer = memo(() => {
         setLoading={loadingAtom.set}
         setError={errorAtom.set}
         setProfileGroup={profileGroupAtom.setProfileGroup}
+        setCompareProfileGroup={compareProfileGroupAtom.setProfileGroup}
         setDragActive={dragActiveAtom.set}
         setViewMode={viewModeAtom.set}
         setFlattenRecursion={flattenRecursionAtom.set}

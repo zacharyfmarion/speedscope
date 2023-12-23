@@ -27,6 +27,7 @@ function ToolbarLeftContent(props: ToolbarProps) {
   const setChronoFlameChart = useSetViewMode(viewModeAtom.set, ViewMode.CHRONO_FLAME_CHART)
   const setLeftHeavyFlameGraph = useSetViewMode(viewModeAtom.set, ViewMode.LEFT_HEAVY_FLAME_GRAPH)
   const setSandwichView = useSetViewMode(viewModeAtom.set, ViewMode.SANDWICH_VIEW)
+  const setCompareView = useSetViewMode(viewModeAtom.set, ViewMode.COMPARE_VIEW)
 
   if (!props.activeProfileState) return null
 
@@ -58,6 +59,15 @@ function ToolbarLeftContent(props: ToolbarProps) {
         onClick={setSandwichView}
       >
         <span className={css(style.emoji)}>🥪</span>Sandwich
+      </div>
+      <div
+        className={css(
+          style.toolbarTab,
+          props.viewMode === ViewMode.COMPARE_VIEW && style.toolbarTabActive,
+        )}
+        onClick={setCompareView}
+      >
+        <span className={css(style.emoji)}>🥪</span>Compare
       </div>
     </div>
   )

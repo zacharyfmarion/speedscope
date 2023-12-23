@@ -97,10 +97,17 @@ export function formatPercent(percent: number) {
   return formattedPercent
 }
 
+/**
+ * Calculates the fractional part of a given number. For example fract(3.7) returns 0.7
+ */
 export function fract(x: number) {
   return x - Math.floor(x)
 }
 
+/**
+ * Generates a triangle wave that oscillates linearly between -1 and 0 over the
+ * input range with a period of 1
+ */
 export function triangle(x: number) {
   return 2.0 * Math.abs(fract(x) - 0.5) - 1.0
 }
