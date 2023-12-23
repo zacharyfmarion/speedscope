@@ -37,26 +37,26 @@ function colorForBucket(t: number) {
   };
 
   if (t < 0.5) {
-      // Interpolate between red and gray
+      // Interpolate between green and gray
       const mixRatio = 1.0 - (t - 0.1) / (0.5 - 0.1); // Linear transformation
-      return mix(red, gray, mixRatio);
+      return mix(green, gray, mixRatio);
   } else {
-      // Interpolate between gray and green
+      // Interpolate between gray and red 
       const mixRatio = (t - 0.5) / 0.5; // Normalize t to the range [0, 1]
-      return mix(gray, green, mixRatio);
+      return mix(gray, red, mixRatio);
   }
 }
 
 const colorForBucketGLSL = `
   vec3 colorForBucket(float t) {
     if (t < 0.5) {
-      // Interpolate between red and gray
+      // Interpolate between green and gray
       float mixRatio = 1.0 - (t - 0.1) / (0.5 - 0.1); // linear transformation so that colors closer to 0.1 are more red
-      return mix(vec3(1.0, 0.0, 0.0), vec3(0.5, 0.5, 0.5), mixRatio);
+      return mix(vec3(0.0, 1.0, 0.0), vec3(0.5, 0.5, 0.5), mixRatio);
     } else {
-      // Interpolate between gray and green
+      // Interpolate between gray and red
       float mixRatio = (t - 0.5) / 0.5; // Normalize t to the range [0, 1] for mixing
-      return mix(vec3(0.5, 0.5, 0.5), vec3(0.0, 1.0, 0.0), mixRatio);
+      return mix(vec3(0.5, 0.5, 0.5), vec3(1.0, 0.0, 0.0), mixRatio);
     }
   }
 `;

@@ -56,17 +56,28 @@ function getFrameDifference(beforeFrame: Frame | undefined, afterFrame: Frame | 
   const afterTotalWeight = afterFrame?.getTotalWeight() || 0
   const afterSelfWeight = afterFrame?.getSelfWeight() || 0
 
+  const selfWeightDiff =  afterSelfWeight - beforeSelfWeight;
+  const totalWeightDiff = afterTotalWeight - beforeTotalWeight;
+
+  // Calculate percentage increases, handling division by zero
+  const selfWeightPercentIncrease = beforeSelfWeight !== 0 ? (selfWeightDiff / beforeSelfWeight) : 0;
+  const totalWeightPercentIncrease = beforeTotalWeight !== 0 ? (totalWeightDiff / beforeTotalWeight) : 0;
+
   return {
-    selfWeightDiff: beforeSelfWeight - afterSelfWeight,
-    totalWeightDiff: beforeTotalWeight - afterTotalWeight,
-  }
+    selfWeightDiff,
+    totalWeightDiff,
+    selfWeightPercentIncrease,
+    totalWeightPercentIncrease,
+  };
 }
 
 type FrameDiff = {
   beforeFrame: Frame
   afterFrame: Frame | undefined
   selfWeightDiff: number
+  selfWeightPercentIncrease: number;
   totalWeightDiff: number
+  totalWeightPercentIncrease: number;
 }
 
 function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff[] {
@@ -76,9 +87,16 @@ function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff
 
   beforeProfile.forEachFrame(beforeFrame => {
     const afterFrame = afterFrameMap.get(beforeFrame.key)
-    const {selfWeightDiff, totalWeightDiff} = getFrameDifference(beforeFrame, afterFrame)
+    const { selfWeightDiff, totalWeightDiff, selfWeightPercentIncrease, totalWeightPercentIncrease } = getFrameDifference(beforeFrame, afterFrame)
 
-    frameDiffs.push({beforeFrame, afterFrame, selfWeightDiff, totalWeightDiff})
+    frameDiffs.push({
+      beforeFrame, 
+      afterFrame, 
+      selfWeightDiff, 
+      totalWeightDiff,
+      selfWeightPercentIncrease,
+      totalWeightPercentIncrease,
+    })
   })
 
   return frameDiffs
@@ -86,17 +104,10 @@ function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff
 
 /**
  * Ensures that all frame diffs sit between 0.1 and 0.9.
+ * Anything larger than 0.5 is a percent increase, anything smaller is a
+ * percent decrease
  */
 function normalizeFrameDiffs(frameDiffs: FrameDiff[]): FrameDiff[] {
-  // Find the maximum absolute differences
-  let maxSelfWeightDiff = 0;
-  let maxTotalWeightDiff = 0;
-
-  frameDiffs.forEach(fd => {
-    maxSelfWeightDiff = Math.max(maxSelfWeightDiff, Math.abs(fd.selfWeightDiff));
-    maxTotalWeightDiff = Math.max(maxTotalWeightDiff, Math.abs(fd.totalWeightDiff));
-  });
-
   // Map from [-1,1] to [0.1, 0.9]
   function mapToOutputRange(diff: number) {
     return ((diff + 1) / 2 * 0.8) + 0.1
@@ -105,8 +116,8 @@ function normalizeFrameDiffs(frameDiffs: FrameDiff[]): FrameDiff[] {
   // Normalize the differences, scaling down a bit further
   return frameDiffs.map(fd => ({
     ...fd,
-    selfWeightDiff: mapToOutputRange(fd.selfWeightDiff / maxSelfWeightDiff),
-    totalWeightDiff: mapToOutputRange(fd.totalWeightDiff / maxTotalWeightDiff)
+    selfWeightPercentIncrease: mapToOutputRange(fd.selfWeightPercentIncrease),
+    totalWeightPercentIncrease: mapToOutputRange(fd.totalWeightPercentIncrease)
   }));
 }
 
@@ -119,31 +130,14 @@ export const getFrameToColorBucketCompare = (
 
   const frameToColorBucket = new Map<string | number, number>()
 
-  console.log('---- BEFORE -----')
-
-  beforeProfile.forEachFrame(f => {
-    if (f.name.includes('prepareHydratedValue')) {
-      console.log(f.key);
-    }
-  })
-
-  console.log('---- AFTER -----')
-
-  afterProfile.forEachFrame(f => {
-    if (f.name.includes('prepareHydratedValue')) {
-      console.log(f.key);
-    }
-  })
-
-  scaledDiffs.forEach(({beforeFrame, afterFrame, totalWeightDiff, selfWeightDiff}) => {
-
-    if (beforeFrame.name.includes('prepareHydratedValue')) {
-      console.log({ beforeFrame, afterFrame, selfWeightDiff });
+  scaledDiffs.forEach(({beforeFrame, afterFrame, totalWeightDiff, selfWeightDiff, selfWeightPercentIncrease, totalWeightPercentIncrease }) => {
+    if (beforeFrame.name.startsWith('transform')) {
+      console.log({ beforeFrame, afterFrame, selfWeightDiff, totalWeightDiff });
     }
 
     // TODO: Deal with self vs total weight with a state variable
     // that is surfaced in the UI
-    frameToColorBucket.set(beforeFrame.key, selfWeightDiff)
+    frameToColorBucket.set(beforeFrame.key, selfWeightPercentIncrease)
   })
 
   return frameToColorBucket
