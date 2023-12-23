@@ -120,9 +120,13 @@ export const getFrameToColorBucketCompare = (
   const frameToColorBucket = new Map<string | number, number>()
 
   scaledDiffs.forEach(({beforeFrame, totalWeightDiff, selfWeightDiff}) => {
-    // TODO: Deal with self vs total weight
-    // We replace 0 with 1 since 0 is reserved for the background color
-    frameToColorBucket.set(beforeFrame.key, selfWeightDiff)
+    if (totalWeightDiff < 0.5) {
+      console.log({ beforeFrame, totalWeightDiff });
+    }
+
+    // TODO: Deal with self vs total weight with a state variable
+    // that is surfaced in the UI
+    frameToColorBucket.set(beforeFrame.key, totalWeightDiff)
   })
 
   return frameToColorBucket

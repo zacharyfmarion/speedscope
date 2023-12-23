@@ -174,6 +174,10 @@ export function objectsHaveShallowEquality<T extends object>(a: T, b: T): boolea
   return true
 }
 
+/**
+ * Creates a memoized version of a function that caches the result based on 
+ * shallow equality of its object argument.
+ */
 export function memoizeByShallowEquality<T extends object, U>(cb: (t: T) => U): (t: T) => U {
   let last: {args: T; result: U} | null = null
   return (args: T) => {
@@ -192,6 +196,10 @@ export function memoizeByShallowEquality<T extends object, U>(cb: (t: T) => U): 
   }
 }
 
+/**
+ * Creates a memoized version of a function that caches the result based on
+ * the reference equality of its argument.
+ */
 export function memoizeByReference<T, U>(cb: (t: T) => U): (t: T) => U {
   let last: {args: T; result: U} | null = null
   return (args: T) => {

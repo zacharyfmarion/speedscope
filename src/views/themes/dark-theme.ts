@@ -52,7 +52,7 @@ const colorForBucketGLSL = `
   vec3 colorForBucket(float t) {
     if (t < 0.5) {
       // Interpolate between red and gray
-      float mixRatio = t / 0.5; // Normalize t to the range [0, 1] for mixing
+      float mixRatio = 1.0 - (t - 0.1) / (0.5 - 0.1); // linear transformation so that colors closer to 0.1 are more red
       return mix(vec3(1.0, 0.0, 0.0), vec3(0.5, 0.5, 0.5), mixRatio);
     } else {
       // Interpolate between gray and green
