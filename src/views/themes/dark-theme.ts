@@ -26,7 +26,6 @@ enum Colors {
 // const L_d = 0.1
 
 function colorForBucket(t: number) {
-  console.log(t);
   // Represents a color in RGB format
   const red = [1.0, 0.0, 0.0]; // Red color
   const green = [0.0, 1.0, 0.0]; // Green color
@@ -51,19 +50,14 @@ function colorForBucket(t: number) {
 
 const colorForBucketGLSL = `
   vec3 colorForBucket(float t) {
-    vec3 red = vec3(1.0, 0.0, 0.0); // Red color
-    vec3 green = vec3(0.0, 1.0, 0.0); // Green color
-    vec3 gray = vec3(0.5, 0.5, 0.5); // Gray color
-
-    if (t == 1.0) {
-      return gray;
-    }
-    if (t < 0.0) {
-      // Interpolate between gray and red for negative values
-      return mix(gray, red, -t);
+    if (t < 0.5) {
+      // Interpolate between red and gray
+      float mixRatio = t / 0.5; // Normalize t to the range [0, 1] for mixing
+      return mix(vec3(1.0, 0.0, 0.0), vec3(0.5, 0.5, 0.5), mixRatio);
     } else {
-      // Interpolate between gray and green for positive values
-      return mix(gray, green, t);
+      // Interpolate between gray and green
+      float mixRatio = (t - 0.5) / 0.5; // Normalize t to the range [0, 1] for mixing
+      return mix(vec3(0.5, 0.5, 0.5), vec3(0.0, 1.0, 0.0), mixRatio);
     }
   }
 `;

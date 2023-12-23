@@ -84,6 +84,9 @@ function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff
   return frameDiffs
 }
 
+/**
+ * Ensures that all frame diffs sit between 0.1 and 0.9.
+ */
 function normalizeFrameDiffs(frameDiffs: FrameDiff[]): FrameDiff[] {
   // Find the maximum absolute differences
   let maxSelfWeightDiff = 0;
@@ -94,11 +97,16 @@ function normalizeFrameDiffs(frameDiffs: FrameDiff[]): FrameDiff[] {
     maxTotalWeightDiff = Math.max(maxTotalWeightDiff, Math.abs(fd.totalWeightDiff));
   });
 
+  // Map from [-1,1] to [0.1, 0.9]
+  function mapToOutputRange(diff: number) {
+    return ((diff + 1) / 2 * 0.8) + 0.1
+  }
+
   // Normalize the differences, scaling down a bit further
   return frameDiffs.map(fd => ({
     ...fd,
-    selfWeightDiff: fd.selfWeightDiff / (maxSelfWeightDiff * 1.7),
-    totalWeightDiff: fd.totalWeightDiff / (maxTotalWeightDiff * 1.7)
+    selfWeightDiff: mapToOutputRange(fd.selfWeightDiff / maxSelfWeightDiff),
+    totalWeightDiff: mapToOutputRange(fd.totalWeightDiff / maxTotalWeightDiff)
   }));
 }
 
@@ -114,14 +122,7 @@ export const getFrameToColorBucketCompare = (
   scaledDiffs.forEach(({beforeFrame, totalWeightDiff, selfWeightDiff}) => {
     // TODO: Deal with self vs total weight
     // We replace 0 with 1 since 0 is reserved for the background color
-    // And we just need a unique identifier to tell us that there was 
-    // no difference. Also since we scale down the diffs there will never
-    // be a real value mapped to 1
-    const selfDiff = selfWeightDiff === 0 ? 1 : selfWeightDiff;
-    const totalDiff = totalWeightDiff === 0 ? 1 : totalWeightDiff;
-    console.log(selfDiff);
-
-    frameToColorBucket.set(beforeFrame.key, selfDiff)
+    frameToColorBucket.set(beforeFrame.key, selfWeightDiff)
   })
 
   return frameToColorBucket
