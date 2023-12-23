@@ -263,7 +263,9 @@ function getThreadNamesByPidTid(events: TraceEvent[]): Map<string, string> {
 function keyForEvent(event: TraceEvent): string {
   let name = `${event.name || '(unnamed)'}`
   if (event.args) {
-    name += ` ${JSON.stringify(event.args)}`
+    // TODO: This is just a special case for how the transformer works in hermes
+    const { parent, ...usableArgs }  = event.args;
+    name += ` ${JSON.stringify(usableArgs)}`
   }
   return name
 }

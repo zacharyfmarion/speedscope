@@ -119,9 +119,26 @@ export const getFrameToColorBucketCompare = (
 
   const frameToColorBucket = new Map<string | number, number>()
 
+  console.log('---- BEFORE -----')
+
+  beforeProfile.forEachFrame(f => {
+    if (f.name.includes('prepareHydratedValue')) {
+      console.log(f.key);
+    }
+  })
+
+  console.log('---- AFTER -----')
+
+  afterProfile.forEachFrame(f => {
+    if (f.name.includes('prepareHydratedValue')) {
+      console.log(f.key);
+    }
+  })
+
   scaledDiffs.forEach(({beforeFrame, afterFrame, totalWeightDiff, selfWeightDiff}) => {
+
     if (beforeFrame.name.includes('prepareHydratedValue')) {
-      console.log({ beforeFrame, afterFrame, totalWeightDiff });
+      console.log({ beforeFrame, afterFrame, selfWeightDiff });
     }
 
     // TODO: Deal with self vs total weight with a state variable
