@@ -1,7 +1,7 @@
 import {Color} from '../../lib/color'
 import {triangle} from '../../lib/utils'
 import {Theme} from './theme'
-import {compareColorForBucket, compareColorForBucketGLSL} from './utils'
+import {compareColorForBucket, compareColorForBucketGLSL} from './compare-theme'
 
 // These colors are intentionally not exported from this file, because these
 // colors are theme specific, and we want all color values to come from the
@@ -65,8 +65,13 @@ export const lightTheme: Theme = {
   searchMatchPrimaryColor: Colors.ORANGE,
   searchMatchSecondaryColor: Colors.YELLOW,
 
-  colorForBucket,
-  colorForBucketGLSL,
+  // colorForBucket,
+  // colorForBucketGLSL,
+
+  // TODO: Theme overriding appears to be broken and i don't understand
+  // webgl well enough to figure it out
+  colorForBucket: compareColorForBucket,
+  colorForBucketGLSL: compareColorForBucketGLSL,
 }
 
 export const lightCompareTheme: Theme = {

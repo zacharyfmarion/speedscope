@@ -127,6 +127,9 @@ function normalizeFrameDiffs(frameDiffs: FrameDiff[]): FrameDiff[] {
   }))
 }
 
+// We ignore anything less than 3ms
+const COMPARE_THRESHOLD = 3_000_000;
+
 export const getFrameToColorBucketCompare = (
   beforeProfile: Profile,
   afterProfile: Profile,
@@ -134,15 +137,13 @@ export const getFrameToColorBucketCompare = (
   const frameDiffs = getFrameDiffs(beforeProfile, afterProfile)
   const scaledDiffs = normalizeFrameDiffs(frameDiffs)
 
-  console.log(scaledDiffs);
-
   const frameToColorBucket = new Map<string | number, number>()
 
   scaledDiffs.forEach(
     ({
       beforeFrame,
       // afterFrame,
-      // totalWeightDiff,
+      totalWeightDiff,
       // selfWeightDiff,
       // selfWeightPercentIncrease,
       totalWeightPercentIncrease,
@@ -150,7 +151,10 @@ export const getFrameToColorBucketCompare = (
       // TODO: Deal with self vs total weight with a state variable
       // Also a variable for whether to go by percent increase / decrease vs ns diff
       // that is surfaced in the UI
-      frameToColorBucket.set(beforeFrame.key, totalWeightPercentIncrease)
+
+      const value = Math.abs(totalWeightDiff) > COMPARE_THRESHOLD ? totalWeightPercentIncrease : 0.5;
+
+      frameToColorBucket.set(beforeFrame.key, value)
     },
   )
 
