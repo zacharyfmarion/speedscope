@@ -82,12 +82,14 @@ type FrameDiff = {
 }
 
 function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff[] {
-  const afterFrameMap = afterProfile.getFrameMap()
+  const afterFrameMap = afterProfile.getCompareKeyFrameMap()
 
   const frameDiffs: FrameDiff[] = []
 
   beforeProfile.forEachFrame(beforeFrame => {
-    const afterFrame = afterFrameMap.get(beforeFrame.key)
+    // First try by comparekey, then by frame key
+    console.log(beforeFrame.compareKey);
+    const afterFrame = afterFrameMap.get(beforeFrame.compareKey || beforeFrame.key)
     const {
       selfWeightDiff,
       totalWeightDiff,

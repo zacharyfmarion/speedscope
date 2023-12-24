@@ -260,21 +260,28 @@ function getThreadNamesByPidTid(events: TraceEvent[]): Map<string, string> {
   return threadNameByPidTid
 }
 
-function keyForEvent(event: TraceEvent): string {
+function keyForEvent(event: TraceEvent, omitParent: boolean = false): string {
   let name = `${event.name || '(unnamed)'}`
   if (event.args) {
-    // TODO: This is just a special case for how the transformer works in hermes
-    const {parent, ...usableArgs} = event.args
-    name += ` ${JSON.stringify(usableArgs)}`
+    const { parent, ...otherArgs } = event.args
+    name += ` ${JSON.stringify(omitParent ? otherArgs : event.args)}`
   }
   return name
 }
 
+// TODO: The issue is that we cannot match keys across different profiles
+// when comparing because the parent id is going to be different. So we basically
+// need to get rid of the parent when comparing, but we still want to keep it for
+// everything else, since it looks like the profiles don't render right if parent
+// is not in args???
 function frameInfoForEvent(event: TraceEvent): FrameInfo {
   const key = keyForEvent(event)
+  const compareKey = keyForEvent(event, true)
+
   return {
     name: key,
     key: key,
+    compareKey,
   }
 }
 
