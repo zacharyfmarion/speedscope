@@ -134,21 +134,19 @@ export const getFrameToColorBucketCompare = (
   const frameDiffs = getFrameDiffs(beforeProfile, afterProfile)
   const scaledDiffs = normalizeFrameDiffs(frameDiffs)
 
+  console.log(scaledDiffs);
+
   const frameToColorBucket = new Map<string | number, number>()
 
   scaledDiffs.forEach(
     ({
       beforeFrame,
-      afterFrame,
-      totalWeightDiff,
-      selfWeightDiff,
-      selfWeightPercentIncrease,
+      // afterFrame,
+      // totalWeightDiff,
+      // selfWeightDiff,
+      // selfWeightPercentIncrease,
       totalWeightPercentIncrease,
     }) => {
-      if (beforeFrame.name.startsWith('transform')) {
-        console.log({beforeFrame, afterFrame, selfWeightDiff, totalWeightDiff})
-      }
-
       // TODO: Deal with self vs total weight with a state variable
       // Also a variable for whether to go by percent increase / decrease vs ns diff
       // that is surfaced in the UI
@@ -172,7 +170,7 @@ export const getFrameToColorBucket = memoizeByReference(
     frames.sort(compare)
     const frameToColorBucket = new Map<string | number, number>()
     for (let i = 0; i < frames.length; i++) {
-      frameToColorBucket.set(frames[i].key, 140)
+      frameToColorBucket.set(frames[i].key, Math.floor((255 * i) / frames.length))
     }
 
     return frameToColorBucket

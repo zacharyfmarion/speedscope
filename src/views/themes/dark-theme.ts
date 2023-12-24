@@ -1,6 +1,7 @@
 import {Color} from '../../lib/color'
 import {triangle} from '../../lib/utils'
 import {Theme} from './theme'
+import {compareColorForBucket, compareColorForBucketGLSL} from './utils'
 
 // These colors are intentionally not exported from this file, because these
 // colors are theme specific, and we want all color values to come from the
@@ -20,52 +21,28 @@ enum Colors {
   BROWN = '#A66F1C',
 }
 
-// const C_0 = 0.2
-// const C_d = 0.1
-// const L_0 = 0.2
-// const L_d = 0.1
+const C_0 = 0.2
+const C_d = 0.1
+const L_0 = 0.2
+const L_d = 0.1
 
-function colorForBucket(t: number) {
-  const red = [1.0, 0.0, 0.0] // Red color
-  const green = [0.0, 1.0, 0.0] // Green color
-  const gray = [0.5, 0.5, 0.5] // Gray color
-
-  // Mix function to interpolate between two colors
-  const mix = (color1: number[], color2: number[], factor: number) => {
-    const [r, g, b] = color1.map((c1, index) => c1 * (1 - factor) + color2[index] * factor)
-    return new Color(r, g, b)
-  }
-
-  if (t < 0.5) {
-    // Interpolate between green and gray
-    const mixRatio = 1.0 - (t - 0.1) / (0.5 - 0.1) // Linear transformation
-    return mix(green, gray, mixRatio)
-  } else {
-    // Interpolate between gray and red
-    const mixRatio = (t - 0.5) / 0.5 // Normalize t to the range [0, 1]
-    return mix(gray, red, mixRatio)
-  }
+const colorForBucket = (t: number) => {
+  const x = triangle(30.0 * t)
+  const H = 360.0 * (0.9 * t)
+  const C = C_0 + C_d * x
+  const L = L_0 - L_d * x
+  return Color.fromLumaChromaHue(L, C, H)
 }
 
 const colorForBucketGLSL = `
   vec3 colorForBucket(float t) {
-    if (t < 0.5) {
-      // Interpolate between green and gray
-      float mixRatio = 1.0 - (t - 0.1) / (0.5 - 0.1); // linear transformation so that colors closer to 0.1 are more red
-      return mix(vec3(0.0, 1.0, 0.0), vec3(0.5, 0.5, 0.5), mixRatio);
-    } else {
-      // Interpolate between gray and red
-      float mixRatio = (t - 0.5) / 0.5; // Normalize t to the range [0, 1] for mixing
-      return mix(vec3(0.5, 0.5, 0.5), vec3(1.0, 0.0, 0.0), mixRatio);
-    }
+    float x = triangle(30.0 * t);
+    float H = 360.0 * (0.9 * t);
+    float C = ${C_0.toFixed(1)} + ${C_d.toFixed(1)} * x;
+    float L = ${L_0.toFixed(1)} - ${L_d.toFixed(1)} * x;
+    return hcl2rgb(H, C, L);
   }
 `
-
-// float x = triangle(30.0 * t);
-// float H = 360.0 * (0.9 * t);
-// float C = ${C_0.toFixed(1)} + ${C_d.toFixed(1)} * x;
-// float L = ${L_0.toFixed(1)} - ${L_d.toFixed(1)} * x;
-// return hcl2rgb(H, C, L);
 
 export const darkTheme: Theme = {
   fgPrimaryColor: Colors.LIGHTER_GRAY,
@@ -91,4 +68,10 @@ export const darkTheme: Theme = {
 
   colorForBucket,
   colorForBucketGLSL,
+}
+
+export const darkCompareTheme: Theme = {
+  ...darkTheme,
+  colorForBucket: compareColorForBucket,
+  colorForBucketGLSL: compareColorForBucketGLSL,
 }

@@ -95,5 +95,6 @@ export function ThemeProvider(props: {children: ComponentChildren}) {
 
   const colorScheme = useAtom(colorSchemeAtom)
   const theme = getTheme(colorScheme, systemPrefersDarkMode)
+
   return <ThemeContext.Provider value={theme} children={props.children} />
 }

@@ -67,7 +67,7 @@ function ToolbarLeftContent(props: ToolbarProps) {
         )}
         onClick={setCompareView}
       >
-        <span className={css(style.emoji)}>🥪</span>Compare
+        <span className={css(style.emoji)}>⚖️</span>Compare
       </div>
     </div>
   )

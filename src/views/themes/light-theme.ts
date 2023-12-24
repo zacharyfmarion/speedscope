@@ -1,6 +1,7 @@
 import {Color} from '../../lib/color'
 import {triangle} from '../../lib/utils'
 import {Theme} from './theme'
+import {compareColorForBucket, compareColorForBucketGLSL} from './utils'
 
 // These colors are intentionally not exported from this file, because these
 // colors are theme specific, and we want all color values to come from the
@@ -66,4 +67,10 @@ export const lightTheme: Theme = {
 
   colorForBucket,
   colorForBucketGLSL,
+}
+
+export const lightCompareTheme: Theme = {
+  ...lightTheme,
+  colorForBucket: compareColorForBucket,
+  colorForBucketGLSL: compareColorForBucketGLSL,
 }
