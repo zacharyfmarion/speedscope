@@ -82,17 +82,46 @@ type FrameDiff = {
 }
 
 function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff[] {
-  const afterFrameMap = afterProfile.getCompareKeyFrameMap()
+  const afterCompareKeyMap = afterProfile.getCompareKeyFrameMap()
+  const afterNameMap = afterProfile.getNameFrameMap()
 
   const frameDiffs: FrameDiff[] = []
 
-  beforeProfile.forEachFrame(beforeFrame => {
-    if (beforeFrame.name === 'expensiveThing') {
-      console.log(beforeFrame.compareKey)
+  /**
+   * Find the frame in the after profile we think most likely matches the frame
+   * in the before profile, first by key, and then by name if we don't have a key
+   * match. For now we just ignore functions where we don't have a name
+   */
+  function getMatchingFrame(frame: Frame) {
+    const afterFrame = afterCompareKeyMap.get(frame.getCompareKey())
+
+    if (frame.name === 'fromDMO') {
+      console.log(afterFrame)
     }
 
-    // First try by comparekey, then by frame key
-    const afterFrame = afterFrameMap.get(beforeFrame.getCompareKey())
+    if (afterFrame) return afterFrame
+
+    // If we don't have a key match and it is an anonymous function, we just
+    // return for now, since we don't have a good way of matching the frames.
+    // In the future we could use the string similarities between keys or some
+    // heuristic like that
+    if (['anonymous', '(unnamed)'].includes(frame.name)) {
+      return
+    }
+
+    const framesByName = afterNameMap.get(frame.name) || []
+
+    if (frame.name === 'fromDMO') {
+      console.log(framesByName)
+    }
+
+    return framesByName[0]
+  }
+
+  beforeProfile.forEachFrame(beforeFrame => {
+    // Attempt to find the frame that matches in the after profile
+    const afterFrame = getMatchingFrame(beforeFrame)
+
     const {selfWeightDiff, totalWeightDiff, selfWeightPercentIncrease, totalWeightPercentIncrease} =
       getFrameDifference(beforeFrame, afterFrame)
 
@@ -104,12 +133,6 @@ function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff
       selfWeightPercentIncrease,
       totalWeightPercentIncrease,
     })
-  })
-
-  afterProfile.forEachFrame(afterFrame => {
-    if (afterFrame.name === 'expensiveThing') {
-      console.log(afterFrame.compareKey)
-    }
   })
 
   return frameDiffs
@@ -151,20 +174,15 @@ export const getFrameToColorBucketCompare = (
       beforeFrame,
       afterFrame,
       totalWeightDiff,
-      // selfWeightDiff,
-      // selfWeightPercentIncrease,
+      selfWeightDiff,
+      selfWeightPercentIncrease,
       totalWeightPercentIncrease,
     }) => {
       // TODO: Deal with self vs total weight with a state variable
       // Also a variable for whether to go by percent increase / decrease vs ns diff
       // that is surfaced in the UI
-
-      // if (beforeFrame.name === 'fromDMO') {
-      //   console.log(beforeFrame, afterFrame)
-      // }
-
       // const value = Math.abs(totalWeightDiff) > COMPARE_THRESHOLD ? totalWeightPercentIncrease : 0.5
-      const value = totalWeightPercentIncrease
+      const value = Math.abs(selfWeightDiff) > COMPARE_THRESHOLD ? totalWeightPercentIncrease : 0.5
       frameToColorBucket.set(beforeFrame.key, value)
     },
   )

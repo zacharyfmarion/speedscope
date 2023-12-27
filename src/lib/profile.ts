@@ -304,6 +304,23 @@ export class Profile {
     return map
   }
 
+  /**
+   * Get a map of the frame name to an array of frames. The frame name
+   * is not unique, unlike the key is supposed to be, so mutliple frames can
+   * be mapped to each function name
+   */
+  getNameFrameMap() {
+    const map = new Map<string | number, Frame[]>()
+
+    this.forEachFrame(f => {
+      const frames = map.get(f.name) || []
+      frames.push(f)
+      map.set(f.name, frames)
+    })
+
+    return map
+  }
+
   getProfileWithRecursionFlattened(): Profile {
     const builder = new CallTreeProfileBuilder()
 

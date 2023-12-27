@@ -309,10 +309,19 @@ function getEventName(event: TraceEvent): string {
   return `${event.name || '(unnamed)'}`
 }
 
-function keyForEvent(event: TraceEvent): string {
+type KeyForEventOptions = {
+  omitParent?: boolean
+}
+
+function keyForEvent(event: TraceEvent, {omitParent}: KeyForEventOptions = {}): string {
   let key = getEventName(event)
   if (event.args) {
-    key += ` ${JSON.stringify(event.args)}`
+    if (omitParent) {
+      const {parent, ...args} = event.args
+      key += ` ${JSON.stringify(args)}`
+    } else {
+      key += ` ${JSON.stringify(event.args)}`
+    }
   }
   return key
 }
@@ -327,13 +336,15 @@ function frameInfoForEvent(
   // more accurately populate profiles with info such as line + col number
   if (exporterSource === ExporterSource.HERMES) {
     const name = getEventName(event)
+    const frameKey = `${event.name}:${event.args.url}:${event.args.line}:${event.args.column}`
 
     return {
       name,
-      // parent is serialized so we remove it and just compare the names
-      // TODO: We need to handle anonymous since this is not really sufficient for that
-      compareKey: name,
-      key: key,
+      // parent is serialized but is different between profiles...we want a key that
+      // is consistent across them
+      // TODO: compareKey is no longer necessary
+      compareKey: frameKey,
+      key: frameKey,
       file: event.args.url,
       line: event.args.line,
       col: event.args.column,
