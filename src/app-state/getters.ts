@@ -87,8 +87,12 @@ function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff
   const frameDiffs: FrameDiff[] = []
 
   beforeProfile.forEachFrame(beforeFrame => {
+    if (beforeFrame.name === 'expensiveThing') {
+      console.log(beforeFrame.compareKey)
+    }
+
     // First try by comparekey, then by frame key
-    const afterFrame = afterFrameMap.get(beforeFrame.key)
+    const afterFrame = afterFrameMap.get(beforeFrame.getCompareKey())
     const {selfWeightDiff, totalWeightDiff, selfWeightPercentIncrease, totalWeightPercentIncrease} =
       getFrameDifference(beforeFrame, afterFrame)
 
@@ -100,6 +104,12 @@ function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff
       selfWeightPercentIncrease,
       totalWeightPercentIncrease,
     })
+  })
+
+  afterProfile.forEachFrame(afterFrame => {
+    if (afterFrame.name === 'expensiveThing') {
+      console.log(afterFrame.compareKey)
+    }
   })
 
   return frameDiffs
@@ -124,8 +134,8 @@ function normalizeFrameDiffs(frameDiffs: FrameDiff[]): FrameDiff[] {
   }))
 }
 
-// We ignore anything less than 3ms
-const COMPARE_THRESHOLD = 3_000_000
+// We ignore anything less than .5ms
+const COMPARE_THRESHOLD = 500_000
 
 export const getFrameToColorBucketCompare = (
   beforeProfile: Profile,
@@ -139,7 +149,7 @@ export const getFrameToColorBucketCompare = (
   scaledDiffs.forEach(
     ({
       beforeFrame,
-      // afterFrame,
+      afterFrame,
       totalWeightDiff,
       // selfWeightDiff,
       // selfWeightPercentIncrease,
@@ -149,8 +159,12 @@ export const getFrameToColorBucketCompare = (
       // Also a variable for whether to go by percent increase / decrease vs ns diff
       // that is surfaced in the UI
 
-      const value = Math.abs(totalWeightDiff) > COMPARE_THRESHOLD ? totalWeightPercentIncrease : 0.5
+      // if (beforeFrame.name === 'fromDMO') {
+      //   console.log(beforeFrame, afterFrame)
+      // }
 
+      // const value = Math.abs(totalWeightDiff) > COMPARE_THRESHOLD ? totalWeightPercentIncrease : 0.5
+      const value = totalWeightPercentIncrease
       frameToColorBucket.set(beforeFrame.key, value)
     },
   )

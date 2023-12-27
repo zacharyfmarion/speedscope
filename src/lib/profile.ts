@@ -6,6 +6,8 @@ const demangleCppModule = import('./demangle-cpp')
 export interface FrameInfo {
   key: string | number
 
+  compareKey?: string | number
+
   // Name of the frame. May be a method name, e.g.
   // "ActiveRecord##to_hash"
   name: string
@@ -50,6 +52,8 @@ export class HasWeights {
 export class Frame extends HasWeights {
   key: string | number
 
+  compareKey?: string | number
+
   // Name of the frame. May be a method name, e.g.
   // "ActiveRecord##to_hash"
   name: string
@@ -71,6 +75,11 @@ export class Frame extends HasWeights {
     this.file = info.file
     this.line = info.line
     this.col = info.col
+    this.compareKey = info.compareKey
+  }
+
+  getCompareKey(): string | number {
+    return this.compareKey || this.key
   }
 
   static root = new Frame({
@@ -289,7 +298,7 @@ export class Profile {
     const map = new Map<string | number, Frame>()
 
     this.forEachFrame(f => {
-      map.set(f.key, f)
+      map.set(f.getCompareKey(), f)
     })
 
     return map

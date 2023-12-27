@@ -326,8 +326,13 @@ function frameInfoForEvent(
   // In Hermes profiles we have additional guaranteed metadata we can use to
   // more accurately populate profiles with info such as line + col number
   if (exporterSource === ExporterSource.HERMES) {
+    const name = getEventName(event)
+
     return {
-      name: getEventName(event),
+      name,
+      // parent is serialized so we remove it and just compare the names
+      // TODO: We need to handle anonymous since this is not really sufficient for that
+      compareKey: name,
       key: key,
       file: event.args.url,
       line: event.args.line,
@@ -557,8 +562,11 @@ function getTimeDeltasForSamples(samples: Sample[]): number[] {
  * https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview#heading=h.b4y98p32171
  */
 function frameInfoForSampleFrame({name, category}: StackFrame): FrameInfo {
+  const key = `${name}:${category}`
+
   return {
-    key: `${name}:${category}`,
+    key,
+    compareKey: key,
     name: name,
   }
 }
