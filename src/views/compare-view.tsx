@@ -14,6 +14,7 @@ import {lightCompareTheme} from './themes/light-theme'
 import {Frame} from '../lib/profile'
 import {Flamechart} from '../lib/flamechart'
 import {FlamechartRenderer} from '../gl/flamechart-renderer'
+import {getProfileDiff} from '../lib/diff'
 
 type CompareViewProps = {
   profileGroup: ProfileGroupState
@@ -38,6 +39,12 @@ function CompareView({
 
     return {beforeProfile, afterProfile}
   }, [profileGroup, compareProfileGroup])
+
+  const diff = useMemo(() => {
+    const diff = getProfileDiff(beforeProfile, afterProfile)
+    console.log(diff)
+    return diff
+  }, [beforeProfile, afterProfile])
 
   const {chronoViewState} = activeProfileState
   const theme = useTheme()

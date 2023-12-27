@@ -88,8 +88,7 @@ function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff
 
   beforeProfile.forEachFrame(beforeFrame => {
     // First try by comparekey, then by frame key
-    console.log(beforeFrame.compareKey)
-    const afterFrame = afterFrameMap.get(beforeFrame.compareKey || beforeFrame.key)
+    const afterFrame = afterFrameMap.get(beforeFrame.key)
     const {selfWeightDiff, totalWeightDiff, selfWeightPercentIncrease, totalWeightPercentIncrease} =
       getFrameDifference(beforeFrame, afterFrame)
 

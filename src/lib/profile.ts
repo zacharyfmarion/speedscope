@@ -6,9 +6,6 @@ const demangleCppModule = import('./demangle-cpp')
 export interface FrameInfo {
   key: string | number
 
-  // TODO: Is this necessary? How do we handle this generically?
-  compareKey: string | number
-
   // Name of the frame. May be a method name, e.g.
   // "ActiveRecord##to_hash"
   name: string
@@ -53,9 +50,6 @@ export class HasWeights {
 export class Frame extends HasWeights {
   key: string | number
 
-  // TODO: Is this necessary
-  compareKey?: string | number
-
   // Name of the frame. May be a method name, e.g.
   // "ActiveRecord##to_hash"
   name: string
@@ -73,7 +67,6 @@ export class Frame extends HasWeights {
   private constructor(info: FrameInfo) {
     super()
     this.key = info.key
-    this.compareKey = info.compareKey
     this.name = info.name
     this.file = info.file
     this.line = info.line
@@ -288,7 +281,7 @@ export class Profile {
     const map = new Map<string | number, Frame>()
 
     this.forEachFrame(f => {
-      map.set(f.compareKey || f.key, f)
+      map.set(f.key, f)
     })
 
     return map
