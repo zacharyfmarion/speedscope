@@ -530,7 +530,11 @@ exports[`importTraceEvents mismatched name: indexToView 1`] = `0`;
 
 exports[`importTraceEvents mismatched name: profileGroup.name 1`] = `"mismatched-name.json"`;
 
+<<<<<<< HEAD
 exports[`importTraceEvents multi-thread json object profile 1`] = `
+=======
+exports[`importTraceEvents multi-thread profile with samples 1`] = `
+>>>>>>> main
 Object {
   "frames": Array [
     Frame {
@@ -551,6 +555,7 @@ Object {
       "selfWeight": 13326,
       "totalWeight": 13326,
     },
+<<<<<<< HEAD
     Frame {
       "col": undefined,
       "file": undefined,
@@ -560,6 +565,8 @@ Object {
       "selfWeight": 0,
       "totalWeight": 0,
     },
+=======
+>>>>>>> main
   ],
   "name": "hermes (pid 7512), mqt_js (tid 1)",
   "stacks": Array [
@@ -569,7 +576,11 @@ Object {
 }
 `;
 
+<<<<<<< HEAD
 exports[`importTraceEvents multi-thread json object profile 2`] = `
+=======
+exports[`importTraceEvents multi-thread profile with samples 2`] = `
+>>>>>>> main
 Object {
   "frames": Array [
     Frame {
@@ -610,9 +621,15 @@ Object {
 }
 `;
 
+<<<<<<< HEAD
 exports[`importTraceEvents multi-thread json object profile: indexToView 1`] = `0`;
 
 exports[`importTraceEvents multi-thread json object profile: profileGroup.name 1`] = `"multi-thread-json-object.json"`;
+=======
+exports[`importTraceEvents multi-thread profile with samples: indexToView 1`] = `0`;
+
+exports[`importTraceEvents multi-thread profile with samples: profileGroup.name 1`] = `"multi-thread-with-samples.json"`;
+>>>>>>> main
 
 exports[`importTraceEvents multiprocess 1`] = `
 Object {
@@ -1324,7 +1341,153 @@ Object {
 }
 `;
 
+<<<<<<< HEAD
 exports[`importTraceEvents simple json profile 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "[root]:root",
+      "line": undefined,
+      "name": "[root]",
+      "selfWeight": 30779,
+      "totalWeight": 64710,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "function1(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:1:1):JavaScript",
+      "line": undefined,
+      "name": "function1(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:1:1)",
+      "selfWeight": 13326,
+      "totalWeight": 13326,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "function2(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:418874:4):JavaScript",
+      "line": undefined,
+      "name": "function2(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:418874:4)",
+      "selfWeight": 0,
+      "totalWeight": 10605,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "function3(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:17:3):JavaScript",
+      "line": undefined,
+      "name": "function3(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:17:3)",
+      "selfWeight": 10605,
+      "totalWeight": 10605,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "[GC Young Gen]:Metadata",
+      "line": undefined,
+      "name": "[GC Young Gen]",
+      "selfWeight": 10000,
+      "totalWeight": 10000,
+    },
+  ],
+  "name": "hermes (pid 7512), mqt_js (tid 7695)",
+  "stacks": Array [
+    "[root] 20.77ms",
+    "[root];function1(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:1:1) 13.33ms",
+    "[root];function2(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:418874:4);function3(http://localhost:8081/index.bundle?platform=android&dev=false&minify=false&app=org.toshi&modulesOnly=false&runModule=true:17:3) 10.61ms",
+    "[root] 10.01ms",
+    "[root];[GC Young Gen] 10.00ms",
+=======
+exports[`importTraceEvents simple hermes profile 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": null,
+      "file": null,
+      "key": "[root] {\\"name\\":\\"[root]\\",\\"category\\":\\"root\\",\\"url\\":null,\\"line\\":null,\\"column\\":null,\\"params\\":null,\\"allocatedCategory\\":\\"root\\",\\"allocatedName\\":\\"[root]\\"}",
+      "line": null,
+      "name": "[root]",
+      "selfWeight": 2,
+      "totalWeight": 14,
+    },
+    Frame {
+      "col": 12,
+      "file": "/Users/example/test_project/node_modules/metro-runtime/src/polyfills/require.js",
+      "key": "beta {\\"line\\":54,\\"column\\":12,\\"funcLine\\":\\"1\\",\\"funcColumn\\":\\"1\\",\\"name\\":\\"beta\\",\\"category\\":\\"JavaScript\\",\\"parent\\":1,\\"url\\":\\"/Users/example/test_project/node_modules/metro-runtime/src/polyfills/require.js\\",\\"params\\":null,\\"allocatedCategory\\":\\"JavaScript\\",\\"allocatedName\\":\\"beta\\"}",
+      "line": 54,
+      "name": "beta",
+      "selfWeight": 12,
+      "totalWeight": 12,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "[root] 1.00µs",
+    "[root];beta 12.00µs",
+    "[root] 1.00µs",
+>>>>>>> main
+  ],
+}
+`;
+
+<<<<<<< HEAD
+exports[`importTraceEvents simple json profile: indexToView 1`] = `0`;
+
+exports[`importTraceEvents simple json profile: profileGroup.name 1`] = `"simple-json.json"`;
+=======
+exports[`importTraceEvents simple hermes profile: indexToView 1`] = `0`;
+
+exports[`importTraceEvents simple hermes profile: profileGroup.name 1`] = `"simple-hermes.json"`;
+>>>>>>> main
+
+exports[`importTraceEvents simple object 1`] = `
+Object {
+  "frames": Array [
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "alpha",
+      "line": undefined,
+      "name": "alpha",
+      "selfWeight": 2,
+      "totalWeight": 14,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "beta",
+      "line": undefined,
+      "name": "beta",
+      "selfWeight": 8,
+      "totalWeight": 12,
+    },
+    Frame {
+      "col": undefined,
+      "file": undefined,
+      "key": "(unnamed)",
+      "line": undefined,
+      "name": "(unnamed)",
+      "selfWeight": 4,
+      "totalWeight": 4,
+    },
+  ],
+  "name": "pid 0, tid 0",
+  "stacks": Array [
+    "alpha 1.00µs",
+    "alpha;beta 6.00µs",
+    "alpha;beta;(unnamed) 4.00µs",
+    "alpha;beta 2.00µs",
+    "alpha 1.00µs",
+  ],
+}
+`;
+
+exports[`importTraceEvents simple object: indexToView 1`] = `0`;
+
+exports[`importTraceEvents simple object: profileGroup.name 1`] = `"simple-object.json"`;
+
+exports[`importTraceEvents simple profile with samples 1`] = `
 Object {
   "frames": Array [
     Frame {
@@ -1384,55 +1547,9 @@ Object {
 }
 `;
 
-exports[`importTraceEvents simple json profile: indexToView 1`] = `0`;
+exports[`importTraceEvents simple profile with samples: indexToView 1`] = `0`;
 
-exports[`importTraceEvents simple json profile: profileGroup.name 1`] = `"simple-json.json"`;
-
-exports[`importTraceEvents simple object 1`] = `
-Object {
-  "frames": Array [
-    Frame {
-      "col": undefined,
-      "file": undefined,
-      "key": "alpha",
-      "line": undefined,
-      "name": "alpha",
-      "selfWeight": 2,
-      "totalWeight": 14,
-    },
-    Frame {
-      "col": undefined,
-      "file": undefined,
-      "key": "beta",
-      "line": undefined,
-      "name": "beta",
-      "selfWeight": 8,
-      "totalWeight": 12,
-    },
-    Frame {
-      "col": undefined,
-      "file": undefined,
-      "key": "(unnamed)",
-      "line": undefined,
-      "name": "(unnamed)",
-      "selfWeight": 4,
-      "totalWeight": 4,
-    },
-  ],
-  "name": "pid 0, tid 0",
-  "stacks": Array [
-    "alpha 1.00µs",
-    "alpha;beta 6.00µs",
-    "alpha;beta;(unnamed) 4.00µs",
-    "alpha;beta 2.00µs",
-    "alpha 1.00µs",
-  ],
-}
-`;
-
-exports[`importTraceEvents simple object: indexToView 1`] = `0`;
-
-exports[`importTraceEvents simple object: profileGroup.name 1`] = `"simple-object.json"`;
+exports[`importTraceEvents simple profile with samples: profileGroup.name 1`] = `"simple-with-samples.json"`;
 
 exports[`importTraceEvents simple: indexToView 1`] = `0`;
 

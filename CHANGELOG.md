@@ -1,3 +1,19 @@
+## [1.18.0] - 2023-12-26
+
+- Add hermes-specific support for the trace event format [[#458](https://github.com/jlfwong/speedscope/pull/458)] (by @zacharyfmarion)
+- Update README-ADMINS.md with npm login instructions [[#457](https://github.com/jlfwong/speedscope/pull/457)] (by @jlfwong)
+
+## [1.17.0] - 2023-12-25
+
+- Upgrade prettier, update prettier & react-hooks eslint plugins [[#456](https://github.com/jlfwong/speedscope/pull/456)] (by @jlfwong)
+- Upgrade typescript & eslint to latest, fix resulting errors [[#455](https://github.com/jlfwong/speedscope/pull/455)] (by @jlfwong)
+- Re-enable eslint prettier rule after being accidentally disabled for 3 years [[#454](https://github.com/jlfwong/speedscope/pull/454)] (by @jlfwong)
+- Support the chrome JSON trace format (allows viewing of hermes traces) [[#453](https://github.com/jlfwong/speedscope/pull/453)] (by @zacharyfmarion)
+- Fix bug in selectQueueToTakeFromNext for trace profiles [[#450](https://github.com/jlfwong/speedscope/pull/450)] (by @zacharyfmarion)
+- Add bounds checking for sampleTypeIndex [[#449](https://github.com/jlfwong/speedscope/pull/449)] (by @jlfwong)
+- Update README-zh_CN.md [[#442](https://github.com/jlfwong/speedscope/pull/442)] (by @byronhe)
+- Update publish-and-deploy to remove automated release creation [[#440](https://github.com/jlfwong/speedscope/pull/440)] (by @jlfwong)
+
 ## [1.16.0] - 2023-07-16
 
 - Automate more of the release process [[#439](https://github.com/jlfwong/speedscope/pull/439)] (by @jlfwong)
