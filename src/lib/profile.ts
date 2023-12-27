@@ -90,6 +90,14 @@ export class CallTreeNode extends HasWeights {
     return this.frame === Frame.root
   }
 
+  key() {
+    return this.frame.key
+  }
+
+  weight() {
+    return this.frame.getSelfWeight()
+  }
+
   // If a node is "frozen", it means it should no longer be mutated.
   private frozen = false
   isFrozen() {
