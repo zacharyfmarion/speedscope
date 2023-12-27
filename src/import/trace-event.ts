@@ -185,7 +185,7 @@ function selectQueueToTakeFromNext(
   // to ensure it opens before we try to close it.
   //
   // Otherwise, process the 'E' queue first.
-  return keyForEvent(bFront) === keyForEvent(eFront) ? 'B' : 'E'
+  return getEventId(bFront) === getEventId(eFront) ? 'B' : 'E'
 }
 
 function convertToEventQueues(events: ImportableTraceEvent[]): [BTraceEvent[], ETraceEvent[]] {
@@ -309,19 +309,16 @@ function getEventName(event: TraceEvent): string {
   return `${event.name || '(unnamed)'}`
 }
 
-type KeyForEventOptions = {
-  omitParent?: boolean
-}
-
-function keyForEvent(event: TraceEvent, {omitParent}: KeyForEventOptions = {}): string {
+/**
+ * Attempt to construct a unique identifier for an event. Note that this
+ * is different from the frame key, as in some cases we don't want to include
+ * some arguments to allow from frame grouping (e.g. parent in the case of
+ * hermes profiles)
+ */
+function getEventId(event: TraceEvent): string {
   let key = getEventName(event)
   if (event.args) {
-    if (omitParent) {
-      const {parent, ...args} = event.args
-      key += ` ${JSON.stringify(args)}`
-    } else {
-      key += ` ${JSON.stringify(event.args)}`
-    }
+    key += ` ${JSON.stringify(event.args)}`
   }
   return key
 }
@@ -330,26 +327,21 @@ function frameInfoForEvent(
   event: TraceEvent,
   exporterSource: ExporterSource = ExporterSource.UNKNOWN,
 ): FrameInfo {
-  const key = keyForEvent(event)
-
   // In Hermes profiles we have additional guaranteed metadata we can use to
   // more accurately populate profiles with info such as line + col number
   if (exporterSource === ExporterSource.HERMES) {
-    const name = getEventName(event)
-    const frameKey = `${event.name}:${event.args.url}:${event.args.line}:${event.args.column}`
+    const hermesFrameKey = `${event.name}:${event.args.url}:${event.args.line}:${event.args.column}`
 
     return {
-      name,
-      // parent is serialized but is different between profiles...we want a key that
-      // is consistent across them
-      // TODO: compareKey is no longer necessary
-      compareKey: frameKey,
-      key: frameKey,
+      name: getEventName(event),
+      key: hermesFrameKey,
       file: event.args.url,
       line: event.args.line,
       col: event.args.column,
     }
   }
+
+  const key = getEventId(event)
 
   return {
     name: key,
@@ -573,11 +565,8 @@ function getTimeDeltasForSamples(samples: Sample[]): number[] {
  * https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview#heading=h.b4y98p32171
  */
 function frameInfoForSampleFrame({name, category}: StackFrame): FrameInfo {
-  const key = `${name}:${category}`
-
   return {
-    key,
-    compareKey: key,
+    key: `${name}:${category}`,
     name: name,
   }
 }

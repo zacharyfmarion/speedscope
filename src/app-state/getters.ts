@@ -50,6 +50,16 @@ export const getProfileToView = memoizeByShallowEquality(
 )
 
 function getFrameDifference(beforeFrame: Frame | undefined, afterFrame: Frame | undefined) {
+  // Don't show difference in root time
+  if (beforeFrame?.name === '[root]') {
+    return {
+      selfWeightDiff: 0,
+      totalWeightDiff: 0,
+      selfWeightPercentIncrease: 0,
+      totalWeightPercentIncrease: 0,
+    }
+  }
+
   const beforeTotalWeight = beforeFrame?.getTotalWeight() || 0
   const beforeSelfWeight = beforeFrame?.getSelfWeight() || 0
 
@@ -82,8 +92,8 @@ type FrameDiff = {
 }
 
 function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff[] {
-  const afterCompareKeyMap = afterProfile.getCompareKeyFrameMap()
-  const afterNameMap = afterProfile.getNameFrameMap()
+  const afterKeyMap = afterProfile.getKeyToFrameMap()
+  const afterNameMap = afterProfile.getNameToFrameMap()
 
   const frameDiffs: FrameDiff[] = []
 
@@ -93,9 +103,11 @@ function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff
    * match. For now we just ignore functions where we don't have a name
    */
   function getMatchingFrame(frame: Frame) {
-    const afterFrame = afterCompareKeyMap.get(frame.getCompareKey())
+    console.log({frame})
+    const afterFrame = afterKeyMap.get(frame.key)
 
     if (frame.name === 'fromDMO') {
+      console.log(afterKeyMap)
       console.log(afterFrame)
     }
 
@@ -117,6 +129,12 @@ function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff
 
     return framesByName[0]
   }
+
+  afterProfile.forEachFrame(f => {
+    if (f.name === 'fromDMO') {
+      console.log(f.key)
+    }
+  })
 
   beforeProfile.forEachFrame(beforeFrame => {
     // Attempt to find the frame that matches in the after profile
@@ -157,8 +175,8 @@ function normalizeFrameDiffs(frameDiffs: FrameDiff[]): FrameDiff[] {
   }))
 }
 
-// We ignore anything less than .5ms
-const COMPARE_THRESHOLD = 500_000
+// TODO: Make this configurable in the UI
+const COMPARE_THRESHOLD = 0
 
 export const getFrameToColorBucketCompare = (
   beforeProfile: Profile,
