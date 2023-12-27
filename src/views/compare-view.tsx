@@ -6,24 +6,14 @@ import {compareProfileGroupAtom, profileGroupAtom} from '../app-state'
 import {FlamechartID, ProfileGroupState} from '../app-state/profile-group'
 import {FlamechartSearchContextProvider} from './flamechart-search-view'
 import {FlamechartView} from './flamechart-view'
-import {
-  createMemoizedFlamechartRenderer,
-  getChronoViewFlamechart,
-  useFlamechartSetters,
-} from './flamechart-view-container'
-import {
-  createGetCSSColorForFrame,
-  createGetColorBucketForFrame,
-  getCanvasContext,
-  getFrameToColorBucketCompare,
-  getRowAtlas,
-} from '../app-state/getters'
+import {useFlamechartSetters} from './flamechart-view-container'
+import {getCanvasContext, getFrameToColorBucketCompare, getRowAtlas} from '../app-state/getters'
 import {ThemeContext, useTheme} from './themes/theme'
 import {darkCompareTheme, darkTheme} from './themes/dark-theme'
 import {lightCompareTheme} from './themes/light-theme'
-import { Frame } from '../lib/profile'
-import { Flamechart } from '../lib/flamechart'
-import { FlamechartRenderer } from '../gl/flamechart-renderer'
+import {Frame} from '../lib/profile'
+import {Flamechart} from '../lib/flamechart'
+import {FlamechartRenderer} from '../gl/flamechart-renderer'
 
 type CompareViewProps = {
   profileGroup: ProfileGroupState
@@ -31,11 +21,6 @@ type CompareViewProps = {
   activeProfileState: ActiveProfileState
   glCanvas: HTMLCanvasElement
 }
-
-const getChronoViewFlamechartRenderer = createMemoizedFlamechartRenderer({
-  inverted: false,
-  isCompareView: true,
-})
 
 function CompareView({
   profileGroup,
@@ -68,12 +53,17 @@ function CompareView({
   const getColorBucketForFrame = useCallback(
     (frame: Frame): number => {
       return frameToColorBucket.get(frame.key) || 0
-  }, [frameToColorBucket])
+    },
+    [frameToColorBucket],
+  )
 
-  const getCSSColorForFrame = useCallback((frame: Frame): string => {
-    const t = getColorBucketForFrame(frame) / 255
-    return theme.colorForBucket(t).toCSS()
-  }, [theme, getColorBucketForFrame])
+  const getCSSColorForFrame = useCallback(
+    (frame: Frame): string => {
+      const t = getColorBucketForFrame(frame) / 255
+      return theme.colorForBucket(t).toCSS()
+    },
+    [theme, getColorBucketForFrame],
+  )
 
   const flamechart = useMemo(() => {
     return new Flamechart({
@@ -144,12 +134,12 @@ export const CompareViewContainer = memo(
 
     return (
       // <ThemeContext.Provider value={compareTheme}>
-        <CompareView
-          glCanvas={glCanvas}
-          activeProfileState={activeProfileState}
-          profileGroup={profileGroup}
-          compareProfileGroup={compareProfileGroup}
-        />
+      <CompareView
+        glCanvas={glCanvas}
+        activeProfileState={activeProfileState}
+        profileGroup={profileGroup}
+        compareProfileGroup={compareProfileGroup}
+      />
       // </ThemeContext.Provider>
     )
   },

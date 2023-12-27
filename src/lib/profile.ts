@@ -54,7 +54,7 @@ export class Frame extends HasWeights {
   key: string | number
 
   // TODO: Is this necessary
-  compareKey?: string | number;
+  compareKey?: string | number
 
   // Name of the frame. May be a method name, e.g.
   // "ActiveRecord##to_hash"
