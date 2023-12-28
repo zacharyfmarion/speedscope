@@ -153,14 +153,14 @@ export const CompareViewContainer = memo(
     }
 
     return (
-      <ThemeContext.Provider value={compareTheme}>
-        <CompareView
-          glCanvas={glCanvas}
-          activeProfileState={activeProfileState}
-          profileGroup={profileGroup}
-          compareProfileGroup={compareProfileGroup}
-        />
-      </ThemeContext.Provider>
+      // <ThemeContext.Provider value={compareTheme}>
+      <CompareView
+        glCanvas={glCanvas}
+        activeProfileState={activeProfileState}
+        profileGroup={profileGroup}
+        compareProfileGroup={compareProfileGroup}
+      />
+      // </ThemeContext.Provider>
     )
   },
 )
