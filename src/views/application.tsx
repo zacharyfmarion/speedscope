@@ -2,7 +2,7 @@ import {h} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 
 import {ProfileGroup, SymbolRemapper} from '../lib/profile'
-import {FontFamily, FontSize, Duration} from './style'
+import {FontFamily, FontSize, Duration, commonStyle} from './style'
 import {importEmscriptenSymbolMap as importEmscriptenSymbolRemapper} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
@@ -508,7 +508,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
               name="file"
               id="file"
               onChange={this.onFileSelect}
-              className={css(style.hide)}
+              className={css(commonStyle.hide)}
             />
             <label for="file" className={css(style.browseButton)} tabIndex={0}>
               Browse
@@ -588,7 +588,13 @@ export class Application extends StatelessComponent<ApplicationProps> {
         return <SandwichViewContainer activeProfileState={activeProfileState} glCanvas={glCanvas} />
       }
       case ViewMode.COMPARE_VIEW: {
-        return <CompareViewContainer activeProfileState={activeProfileState} glCanvas={glCanvas} />
+        return (
+          <CompareViewContainer
+            activeProfileState={activeProfileState}
+            glCanvas={glCanvas}
+            onFileSelect={this.onFileSelect}
+          />
+        )
       }
     }
   }
@@ -695,9 +701,6 @@ const getStyle = withTheme(theme =>
     },
     landingP: {
       marginBottom: 16,
-    },
-    hide: {
-      display: 'none',
     },
     browseButtonContainer: {
       display: 'flex',

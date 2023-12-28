@@ -67,7 +67,7 @@ function ToolbarLeftContent(props: ToolbarProps) {
         )}
         onClick={setCompareView}
       >
-        <span className={css(style.emoji)}>⚖️</span>Compare
+        <span className={css(style.emojiBalance)}>⚖️</span>Compare
       </div>
     </div>
   )
@@ -291,6 +291,15 @@ const getStyle = withTheme(theme =>
       verticalAlign: 'middle',
       paddingTop: '0px',
       marginRight: '0.3em',
+    },
+    emojiBalance: {
+      display: 'inline-block',
+      verticalAlign: 'middle',
+      paddingTop: '0px',
+      marginRight: '0.3em',
+      // TODO: This is jank
+      marginTop: '-6px',
+      fontSize: '19px',
     },
     noLinkStyle: {
       textDecoration: 'none',

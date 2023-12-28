@@ -66,13 +66,13 @@ export const darkTheme: Theme = {
   searchMatchPrimaryColor: Colors.BROWN,
   searchMatchSecondaryColor: Colors.LIGHT_BROWN,
 
-  // colorForBucket,
-  // colorForBucketGLSL,
+  colorForBucket,
+  colorForBucketGLSL,
 
   // TODO: Theme overriding appears to be broken and i don't understand
   // webgl well enough to figure it out
-  colorForBucket: compareColorForBucket,
-  colorForBucketGLSL: compareColorForBucketGLSL,
+  // colorForBucket: compareColorForBucket,
+  // colorForBucketGLSL: compareColorForBucketGLSL,
 }
 
 export const darkCompareTheme: Theme = {

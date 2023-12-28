@@ -103,13 +103,7 @@ function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff
    * match. For now we just ignore functions where we don't have a name
    */
   function getMatchingFrame(frame: Frame) {
-    console.log({frame})
     const afterFrame = afterKeyMap.get(frame.key)
-
-    if (frame.name === 'fromDMO') {
-      console.log(afterKeyMap)
-      console.log(afterFrame)
-    }
 
     if (afterFrame) return afterFrame
 
@@ -123,18 +117,8 @@ function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff
 
     const framesByName = afterNameMap.get(frame.name) || []
 
-    if (frame.name === 'fromDMO') {
-      console.log(framesByName)
-    }
-
     return framesByName[0]
   }
-
-  afterProfile.forEachFrame(f => {
-    if (f.name === 'fromDMO') {
-      console.log(f.key)
-    }
-  })
 
   beforeProfile.forEachFrame(beforeFrame => {
     // Attempt to find the frame that matches in the after profile

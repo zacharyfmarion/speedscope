@@ -63,6 +63,13 @@ export interface FlamechartPanZoomViewProps {
 }
 
 export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps, {}> {
+  constructor(props: FlamechartPanZoomViewProps) {
+    super(props)
+    setInterval(() => {
+      this.renderRects()
+    }, 1_000)
+  }
+
   private container: Element | null = null
   private containerRef = (element: Element | null) => {
     this.container = element || null
