@@ -36,8 +36,6 @@ type CompareViewProps = {
 }
 
 const CompareView = memo(function CompareView({
-  profileGroup,
-  compareProfileGroup,
   activeProfileState,
   compareActiveProfileState,
   selectedFrame,
@@ -79,13 +77,13 @@ const CompareView = memo(function CompareView({
           <div className={css(style.flamechartLabelParent, style.flamechartLabelParentBottom)}>
             <div className={css(style.flamechartLabel, style.flamechartLabelBottom)}>After</div>
           </div>
-          {afterCallerCallee && (
+          {/* {afterCallerCallee && (
             <CalleeFlamegraphView
               glCanvas={glCanvas}
               profile={compareActiveProfileState.profile}
               callerCallee={afterCallerCallee}
             />
-          )}
+          )} */}
         </div>
       </div>
     )
@@ -120,8 +118,6 @@ export const CompareViewContainer = memo(
     glCanvas,
   }: CompareViewContainerProps) => {
     const style = getStyle(useTheme())
-    const profileGroup = useAtom(profileGroupAtom)
-    const compareProfileGroup = useAtom(compareProfileGroupAtom)
 
     const {sandwichViewState, index} = activeProfileState
     const {callerCallee} = sandwichViewState
@@ -225,8 +221,6 @@ export const CompareViewContainer = memo(
           setSelectedFrame={setSelectedFrame}
           selectedFrame={selectedFrame}
           profileIndex={index}
-          profileGroup={profileGroup}
-          compareProfileGroup={compareProfileGroup}
         />
       </SandwichViewContext.Provider>
     )
