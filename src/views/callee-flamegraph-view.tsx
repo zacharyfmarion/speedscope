@@ -10,10 +10,10 @@ import {
 } from '../app-state/getters'
 import {FlamechartWrapper} from './flamechart-wrapper'
 import {h} from 'preact'
-import {memo, useEffect} from 'preact/compat'
+import {memo} from 'preact/compat'
 import {useTheme} from './themes/theme'
-import {CallerCalleeState, FlamechartID} from '../app-state/profile-group'
-import {compareProfileGroupAtom, flattenRecursionAtom} from '../app-state'
+import {CallerCalleeState, FlamechartID, ProfileGroupAtom} from '../app-state/profile-group'
+import {flattenRecursionAtom, glCanvasAtom} from '../app-state'
 import {useAtom} from '../lib/atom'
 
 const getCalleeProfile = memoizeByShallowEquality<
@@ -48,18 +48,21 @@ const getCalleeFlamegraphRenderer = createMemoizedFlamechartRenderer()
 type CalleeFlamegraphViewProps = {
   profile: Profile
   callerCallee: CallerCalleeState
-  glCanvas: HTMLCanvasElement
   flamechartId?: FlamechartID
+  // TODO: I don't like overloading this word
+  // Maybe rename the atom?
+  profileGroupAtom: ProfileGroupAtom
 }
 
 export const CalleeFlamegraphView = memo(
   ({
-    glCanvas,
     profile,
     callerCallee,
+    profileGroupAtom,
     flamechartId = FlamechartID.SANDWICH_CALLEES,
   }: CalleeFlamegraphViewProps) => {
     const flattenRecursion = useAtom(flattenRecursionAtom)
+    const glCanvas = useAtom(glCanvasAtom)
     const theme = useTheme()
 
     if (!profile) throw new Error('profile missing')
@@ -87,7 +90,7 @@ export const CalleeFlamegraphView = memo(
         flamechartRenderer={flamechartRenderer}
         canvasContext={canvasContext}
         getCSSColorForFrame={getCSSColorForFrame}
-        {...useFlamechartSetters(flamechartId, compareProfileGroupAtom)}
+        {...useFlamechartSetters(flamechartId, profileGroupAtom)}
         {...callerCallee.calleeFlamegraph}
         // This overrides the setSelectedNode specified in useFlamechartSettesr
         setSelectedNode={noop}

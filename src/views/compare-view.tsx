@@ -20,7 +20,6 @@ import {SandwichViewContext, SandwichViewContextData} from './sandwich-view'
 import {ProfileSearchContext} from './search-view'
 import {sortBy} from '../lib/utils'
 import {getFrameDiffs} from '../app-state/getters'
-import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
 import {CalleeFlamegraphView} from './callee-flamegraph-view'
 
 type CompareViewProps = {
@@ -77,14 +76,11 @@ const CompareView = memo(function CompareView({
           </div>
           {beforeCallerCallee && (
             <CalleeFlamegraphView
-              glCanvas={glCanvas}
               profile={beforeProfile}
               callerCallee={beforeCallerCallee}
+              profileGroupAtom={profileGroupAtom}
+              flamechartId={FlamechartID.SANDWICH_CALLEES}
             />
-            // <InvertedCallerFlamegraphView
-            //   profile={beforeProfile}
-            //   callerCallee={beforeCallerCallee}
-            // />
           )}
         </div>
         <div className={css(style.divider)} />
@@ -94,9 +90,10 @@ const CompareView = memo(function CompareView({
           </div>
           {afterCallerCallee && (
             <CalleeFlamegraphView
-              glCanvas={glCanvas}
               profile={afterProfile}
               callerCallee={afterCallerCallee}
+              profileGroupAtom={compareProfileGroupAtom}
+              flamechartId={FlamechartID.SANDWICH_CALLEES_AFTER}
             />
           )}
         </div>
@@ -138,6 +135,7 @@ export const CompareViewContainer = memo(
     const {callerCallee} = sandwichViewState
 
     const theme = useTheme()
+    // TODO: Does this even get used?
     const setSelectedFrame = useCallback((selectedFrame: Frame | null) => {
       profileGroupAtom.setSelectedFrame(selectedFrame)
     }, [])

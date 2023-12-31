@@ -213,7 +213,7 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
   }
 
   setConfigSpaceViewportRect(id: FlamechartID, configSpaceViewportRect: Rect) {
-    console.log('setConfigSpaceViewportRect', id, configSpaceViewportRect)
+    console.log('setConfigSpaceViewportRect', this.debugKey, id, configSpaceViewportRect)
 
     // TODO: Not sure why this keeps getting called with the same values
     if ([FlamechartID.SANDWICH_CALLEES, FlamechartID.SANDWICH_CALLEES_AFTER].includes(id)) {
