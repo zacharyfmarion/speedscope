@@ -330,7 +330,12 @@ function frameInfoForEvent(
   // In Hermes profiles we have additional guaranteed metadata we can use to
   // more accurately populate profiles with info such as line + col number
   if (exporterSource === ExporterSource.HERMES) {
-    const hermesFrameKey = `${event.name}:${event.args.url}:${event.args.line}:${event.args.column}`
+    // For some reason line numbers in hermes move around a lot...might be a bug in
+    // the engine itself. For now if we have a function name, then don't include the
+    // line and column number in the frame key
+    const hermesFrameKey = ['anonymous', '(unnamed)'].includes(event.name || '')
+      ? `${event.name}:${event.args.url}:${event.args.line}:${event.args.column}`
+      : `${event.name}:${event.args.url}`
 
     return {
       name: getEventName(event),
