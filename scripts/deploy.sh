@@ -18,6 +18,7 @@ git rm -rf .
 find "$TEMP_OUTDIR" -type f ! -path "$TEMP_OUTDIR/node_modules/*" -exec cp {} . \;
 
 # Step 5: Commit and push changes
+rm -rf node_modules
 git add .
 git commit -m "Deploying to GitHub Pages"
 git push origin gh-pages
