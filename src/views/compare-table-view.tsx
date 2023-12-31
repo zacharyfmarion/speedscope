@@ -5,7 +5,7 @@ import {formatPercent, sortBy} from '../lib/utils'
 import {FontSize, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ListItem, ScrollableListView} from './scrollable-list-view'
-import {FrameDiff, createGetCSSColorForFrame, getFrameToColorBucket} from '../app-state/getters'
+import {createGetCSSColorForFrame, getFrameToColorBucket} from '../app-state/getters'
 import {memo} from 'preact/compat'
 import {useCallback, useMemo, useContext, useState} from 'preact/hooks'
 import {SandwichViewContext} from './sandwich-view'
@@ -23,6 +23,7 @@ import {
 import {useAtom} from '../lib/atom'
 import {ActiveProfileState} from '../app-state/active-profile-state'
 import {ProfileSearchContext} from './search-view'
+import {FrameDiff, getFrameFromFrameDiff} from '../lib/frameDiffs'
 
 interface HBarProps {
   percent: number
@@ -120,12 +121,8 @@ const CompareTableRowView = ({
     frameDiff
 
   const frame = useMemo(() => {
-    return frameDiff.beforeFrame ?? frameDiff.afterFrame
+    return getFrameFromFrameDiff(frameDiff)
   }, [frameDiff])
-
-  if (!frame) {
-    console.warn('Got frame diff without valid frames')
-  }
 
   const selected = frame === selectedFrame
 
@@ -153,7 +150,7 @@ const CompareTableRowView = ({
         <ColorChit color={getCSSColorForDiff(totalWeightDiff, theme)} />
         {matchedRanges
           ? highlightRanges(
-              frameDiff.beforeFrame.name,
+              frame.name,
               matchedRanges,
               css(style.matched, selected && style.matchedSelected),
             )
@@ -230,8 +227,7 @@ export const CompareTableView = memo(
 
         for (let i = firstIndex; i <= lastIndex; i++) {
           const frameDiff = frameDiffs[i]
-          // TODO: Abstract this / make better
-          const frame = frameDiff.beforeFrame ?? frameDiff.afterFrame
+          const frame = getFrameFromFrameDiff(frameDiff)
           const match = sandwichContext.getSearchMatchForFrame(frame)
 
           rows.push(
@@ -463,15 +459,16 @@ export const CompareTableViewContainer = memo((ownProps: CompareTableViewContain
 
   const rowList: FrameDiff[] = useMemo(() => {
     const rowList: FrameDiff[] = frameDiffs.filter(frameDiff => {
-      const frame = frameDiff.beforeFrame ?? frameDiff.afterFrame
+      const frame = getFrameFromFrameDiff(frameDiff)
       return !profileSearchResults || profileSearchResults.getMatchForFrame(frame)
     })
 
     switch (sortMethod.field) {
       case CompareSortField.SYMBOL_NAME: {
-        sortBy(rowList, ({beforeFrame, afterFrame}) =>
-          (beforeFrame ?? afterFrame).name.toLowerCase(),
-        )
+        sortBy(rowList, (frameDiff: FrameDiff) => {
+          const frame = getFrameFromFrameDiff(frameDiff)
+          return frame.name.toLowerCase()
+        })
         break
       }
       case CompareSortField.TOTAL_CHANGE: {

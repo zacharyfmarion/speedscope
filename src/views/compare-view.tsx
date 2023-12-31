@@ -19,8 +19,8 @@ import {CompareTableViewContainer} from './compare-table-view'
 import {SandwichViewContext, SandwichViewContextData} from './sandwich-view'
 import {ProfileSearchContext} from './search-view'
 import {sortBy} from '../lib/utils'
-import {getFrameDiffs} from '../app-state/getters'
 import {CalleeFlamegraphView, getCalleeProfile} from './callee-flamegraph-view'
+import {getFrameDiffs} from '../lib/frameDiffs'
 
 type CompareViewProps = {
   selectedFrame: Frame | null
@@ -59,6 +59,7 @@ const CompareView = memo(function CompareView({
     }
   }, [activeProfileState, compareActiveProfileState])
 
+  // TODO: Globally memoize?
   const frameDiffs = useMemo(() => {
     return getFrameDiffs(beforeProfile, afterProfile)
   }, [beforeProfile, afterProfile])
@@ -75,17 +76,17 @@ const CompareView = memo(function CompareView({
    * profiles so the two flamegraphs share the same timescale
    */
   const getTotalWeight = useCallback(() => {
-    if (!beforeCallerCallee) {
-      throw new Error('Before callee not defined')
+    let totalWeight = 0
+
+    if (beforeCallerCallee) {
+      const beforeCalleeProfile = getCalleeProfile({
+        profile: beforeProfile,
+        frame: beforeCallerCallee.selectedFrame,
+        flattenRecursion,
+      })
+
+      totalWeight = beforeCalleeProfile.getTotalNonIdleWeight()
     }
-
-    const beforeCalleeProfile = getCalleeProfile({
-      profile: beforeProfile,
-      frame: beforeCallerCallee.selectedFrame,
-      flattenRecursion,
-    })
-
-    const beforeCalleeTotalWeight = beforeCalleeProfile.getTotalNonIdleWeight()
 
     if (afterCallerCallee) {
       const afterCalleeProfile = getCalleeProfile({
@@ -96,10 +97,10 @@ const CompareView = memo(function CompareView({
 
       const afterCalleeTotalWeight = afterCalleeProfile.getTotalNonIdleWeight()
 
-      return Math.max(beforeCalleeTotalWeight, afterCalleeTotalWeight)
+      return Math.max(totalWeight, afterCalleeTotalWeight)
     }
 
-    return beforeCalleeTotalWeight
+    return totalWeight
   }, [beforeProfile, afterProfile, beforeCallerCallee, afterCallerCallee, flattenRecursion])
 
   if (selectedFrame) {
