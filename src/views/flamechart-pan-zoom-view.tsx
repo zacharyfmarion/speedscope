@@ -481,6 +481,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   }
 
   private renderRects() {
+    console.log('RENDER RECTS')
     if (!this.container) return
     this.updateConfigSpaceViewport()
 
@@ -523,6 +524,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   }
 
   private onBeforeFrame = () => {
+    console.log('ON BEFORE FRAME')
     this.resizeOverlayCanvasIfNeeded()
     this.renderRects()
     this.renderOverlays()

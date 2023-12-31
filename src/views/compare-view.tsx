@@ -9,7 +9,7 @@ import {
   profileGroupAtom,
   tableSortMethodAtom,
 } from '../app-state'
-import {ProfileGroupState} from '../app-state/profile-group'
+import {FlamechartID, ProfileGroupState} from '../app-state/profile-group'
 import {Theme, useTheme, withTheme} from './themes/theme'
 import {Duration, FontSize, Sizes, commonStyle} from './style'
 import {StyleSheet, css} from 'aphrodite'
@@ -43,19 +43,30 @@ const CompareView = memo(function CompareView({
   glCanvas,
 }: CompareViewProps) {
   const style = getStyle(theme)
-  const frameDiffs = useMemo(() => {
-    return getFrameDiffs(activeProfileState?.profile, compareActiveProfileState?.profile)
+
+  const {beforeProfile, afterProfile} = useMemo(() => {
+    return {
+      beforeProfile: activeProfileState.profile,
+      afterProfile: compareActiveProfileState.profile,
+    }
   }, [activeProfileState, compareActiveProfileState])
+
+  const frameDiffs = useMemo(() => {
+    return getFrameDiffs(beforeProfile, afterProfile)
+  }, [beforeProfile, afterProfile])
 
   let flamegraphViews: JSX.Element | null = null
 
-  const beforeCallerCallee = useMemo(() => {
-    return activeProfileState.sandwichViewState.callerCallee
-  }, [activeProfileState])
+  const beforeCallerCallee = activeProfileState.sandwichViewState.callerCallee
+  const afterCallerCallee = compareActiveProfileState.sandwichViewState.callerCallee
 
-  const afterCallerCallee = useMemo(() => {
-    return compareActiveProfileState.sandwichViewState.callerCallee
-  }, [compareActiveProfileState])
+  useEffect(() => {
+    console.log('beforeCallerCallee')
+  }, [beforeCallerCallee])
+
+  useEffect(() => {
+    console.log('afterCallerCallee')
+  }, [afterCallerCallee])
 
   if (selectedFrame) {
     flamegraphViews = (
@@ -67,9 +78,13 @@ const CompareView = memo(function CompareView({
           {beforeCallerCallee && (
             <CalleeFlamegraphView
               glCanvas={glCanvas}
-              profile={activeProfileState.profile}
+              profile={beforeProfile}
               callerCallee={beforeCallerCallee}
             />
+            // <InvertedCallerFlamegraphView
+            //   profile={beforeProfile}
+            //   callerCallee={beforeCallerCallee}
+            // />
           )}
         </div>
         <div className={css(style.divider)} />
@@ -77,13 +92,13 @@ const CompareView = memo(function CompareView({
           <div className={css(style.flamechartLabelParent, style.flamechartLabelParentBottom)}>
             <div className={css(style.flamechartLabel, style.flamechartLabelBottom)}>After</div>
           </div>
-          {/* {afterCallerCallee && (
+          {afterCallerCallee && (
             <CalleeFlamegraphView
               glCanvas={glCanvas}
-              profile={compareActiveProfileState.profile}
+              profile={afterProfile}
               callerCallee={afterCallerCallee}
             />
-          )} */}
+          )}
         </div>
       </div>
     )
@@ -261,7 +276,7 @@ const getStyle = withTheme(theme =>
       justifyContent: 'flex-end',
     },
     callersAndCallees: {
-      flex: '2 1 0%',
+      flex: 1,
       borderLeft: `${Sizes.SEPARATOR_HEIGHT}px solid ${theme.fgSecondaryColor}`,
     },
     divider: {
