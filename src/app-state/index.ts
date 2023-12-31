@@ -60,6 +60,22 @@ export enum SortField {
   TOTAL,
 }
 
+export enum CompareSortField {
+  SYMBOL_NAME,
+  SELF_CHANGE,
+  SELF_PERCENT_CHANGE,
+  TOTAL_CHANGE,
+  TOTAL_PERCENT_CHANGE,
+}
+
+export const COMPARE_SORT_FIELDS: Record<string, CompareSortField> = {
+  'Total Change': CompareSortField.TOTAL_CHANGE,
+  'Total % Change': CompareSortField.TOTAL_PERCENT_CHANGE,
+  'Self Change': CompareSortField.SELF_CHANGE,
+  'Self % Change': CompareSortField.SELF_PERCENT_CHANGE,
+  'Symbol Name': CompareSortField.SYMBOL_NAME,
+}
+
 export enum SortDirection {
   ASCENDING,
   DESCENDING,
@@ -67,6 +83,11 @@ export enum SortDirection {
 
 export interface SortMethod {
   field: SortField
+  direction: SortDirection
+}
+
+export interface CompareSortMethod {
+  field: CompareSortField
   direction: SortDirection
 }
 

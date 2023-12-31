@@ -82,7 +82,7 @@ function getFrameDifference(beforeFrame: Frame | undefined, afterFrame: Frame | 
   }
 }
 
-type FrameDiff = {
+export type FrameDiff = {
   beforeFrame: Frame
   afterFrame: Frame | undefined
   selfWeightDiff: number
@@ -91,7 +91,7 @@ type FrameDiff = {
   totalWeightPercentIncrease: number
 }
 
-function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff[] {
+export function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff[] {
   const afterKeyMap = afterProfile.getKeyToFrameMap()
   const afterNameMap = afterProfile.getNameToFrameMap()
 

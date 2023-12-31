@@ -15,10 +15,11 @@ import {Duration, FontSize, Sizes, commonStyle} from './style'
 import {StyleSheet, css} from 'aphrodite'
 import {Frame} from '../lib/profile'
 import {SandwichSearchView} from './sandwich-search-view'
-import {ProfileTableViewContainer} from './profile-table-view'
+import {CompareTableViewContainer} from './compare-table-view'
 import {SandwichViewContext, SandwichViewContextData} from './sandwich-view'
 import {ProfileSearchContext} from './search-view'
 import {sortBy} from '../lib/utils'
+import {getFrameDiffs} from '../app-state/getters'
 
 type CompareViewProps = {
   profileGroup: ProfileGroupState
@@ -28,14 +29,12 @@ type CompareViewProps = {
   theme: Theme
   activeProfileState: ActiveProfileState
   setSelectedFrame: (selectedFrame: Frame | null) => void
-  glCanvas: HTMLCanvasElement
 }
 
 const CompareView = memo(function CompareView({
   profileGroup,
   compareProfileGroup,
   activeProfileState,
-  glCanvas,
   theme,
 }: CompareViewProps) {
   const style = getStyle(theme)
@@ -50,10 +49,17 @@ const CompareView = memo(function CompareView({
     return {beforeProfile, afterProfile}
   }, [profileGroup, compareProfileGroup])
 
+  const frameDiffs = useMemo(() => {
+    return getFrameDiffs(beforeProfile, afterProfile)
+  }, [beforeProfile, afterProfile])
+
   return (
     <div className={css(commonStyle.hbox, commonStyle.fillY)}>
       <div className={css(style.tableView)}>
-        <ProfileTableViewContainer activeProfileState={activeProfileState} />
+        <CompareTableViewContainer
+          activeProfileState={activeProfileState}
+          frameDiffs={frameDiffs}
+        />
         <SandwichSearchView />
       </div>
     </div>
@@ -62,12 +68,11 @@ const CompareView = memo(function CompareView({
 
 type CompareViewContainerProps = {
   activeProfileState: ActiveProfileState
-  glCanvas: HTMLCanvasElement
   onFileSelect: (ev: Event) => void
 }
 
 export const CompareViewContainer = memo(
-  ({activeProfileState, glCanvas, onFileSelect}: CompareViewContainerProps) => {
+  ({activeProfileState, onFileSelect}: CompareViewContainerProps) => {
     const style = getStyle(useTheme())
     const profileGroup = useAtom(profileGroupAtom)
     const compareProfileGroup = useAtom(compareProfileGroupAtom)
@@ -168,7 +173,6 @@ export const CompareViewContainer = memo(
         <CompareView
           theme={theme}
           activeProfileState={activeProfileState}
-          glCanvas={glCanvas}
           setSelectedFrame={setSelectedFrame}
           selectedFrame={selectedFrame}
           profileIndex={index}
