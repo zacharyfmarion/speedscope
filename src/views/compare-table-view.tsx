@@ -1,22 +1,19 @@
 import {h, JSX, ComponentChild} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 import {Profile, Frame} from '../lib/profile'
-import {formatPercent} from '../lib/utils'
+import {formatPercent, sortBy} from '../lib/utils'
 import {FontSize, Sizes, commonStyle} from './style'
 import {ColorChit} from './color-chit'
 import {ListItem, ScrollableListView} from './scrollable-list-view'
 import {FrameDiff, createGetCSSColorForFrame, getFrameToColorBucket} from '../app-state/getters'
 import {memo} from 'preact/compat'
-import {useCallback, useMemo, useContext} from 'preact/hooks'
+import {useCallback, useMemo, useContext, useState} from 'preact/hooks'
 import {SandwichViewContext} from './sandwich-view'
 import {Color} from '../lib/color'
 import {useTheme, withTheme} from './themes/theme'
 import {
   SortDirection,
-  SortMethod,
-  SortField,
   profileGroupAtom,
-  tableSortMethodAtom,
   searchIsActiveAtom,
   searchQueryAtom,
   CompareSortField,
@@ -96,6 +93,12 @@ function highlightRanges(
   return <span>{spans}</span>
 }
 
+function getCSSColorForDiff(diff: number): string {
+  if (diff > 0) return 'red'
+  if (diff < 0) return 'green'
+  return 'gray'
+}
+
 const CompareTableRowView = ({
   frameDiff,
   matchedRanges,
@@ -103,7 +106,6 @@ const CompareTableRowView = ({
   index,
   // selectedFrame,
   // setSelectedFrame,
-  getCSSColorForFrame,
 }: CompareTableRowViewProps) => {
   const style = getStyle(useTheme())
   const {totalWeightDiff, totalWeightPercentIncrease, selfWeightDiff, selfWeightPercentIncrease} =
@@ -118,7 +120,6 @@ const CompareTableRowView = ({
 
   if (!frame) {
     console.warn('Got frame diff without valid frames')
-    return null
   }
 
   // We intentionally use index rather than frame.key here as the tr key
@@ -134,11 +135,12 @@ const CompareTableRowView = ({
       )}
     >
       <td className={css(style.numericCell)}>{profile.formatValue(totalWeightDiff)}</td>
-      <td className={css(style.numericCell)}>{profile.formatValue(totalWeightPercentIncrease)}</td>
+      <td className={css(style.numericCell)}>{formatPercent(totalWeightPercentIncrease * 100)}</td>
       <td className={css(style.numericCell)}>{profile.formatValue(selfWeightDiff)}</td>
-      <td className={css(style.numericCell)}>{profile.formatValue(selfWeightPercentIncrease)}</td>
+      <td className={css(style.numericCell)}>{formatPercent(selfWeightPercentIncrease * 100)}</td>
       <td title={frame.file} className={css(style.textCell)}>
-        <ColorChit color={getCSSColorForFrame(frame)} />
+        {/* TODO: Make this color based on increase / decrease */}
+        <ColorChit color={getCSSColorForDiff(totalWeightDiff)} />
         {matchedRanges
           ? highlightRanges(
               frameDiff.beforeFrame.name,
@@ -332,7 +334,10 @@ const CompareTableHeader = ({field, onClick, sortMethod, name}: CompareTableHead
   )
 
   return (
-    <th className={css(style.numericCell)} onClick={handleClick}>
+    <th
+      className={css(field === CompareSortField.SYMBOL_NAME ? style.textCell : style.numericCell)}
+      onClick={handleClick}
+    >
       <SortIcon activeDirection={sortMethod.field === field ? sortMethod.direction : null} />
       {name}
     </th>
@@ -395,8 +400,8 @@ const getStyle = withTheme(theme =>
       position: 'relative',
       textAlign: 'right',
       paddingRight: Sizes.FRAME_HEIGHT,
-      width: 6 * Sizes.FRAME_HEIGHT,
-      minWidth: 6 * Sizes.FRAME_HEIGHT,
+      width: 100,
+      minWidth: 100,
     },
     textCell: {
       textOverflow: 'ellipsis',
@@ -442,9 +447,49 @@ export const CompareTableViewContainer = memo((ownProps: CompareTableViewContain
   const {activeProfileState, frameDiffs} = ownProps
   const {profile, sandwichViewState} = activeProfileState
 
+  const [sortMethod, setSortMethod] = useState({
+    field: CompareSortField.TOTAL_CHANGE,
+    direction: SortDirection.DESCENDING,
+  })
+
   if (!profile) throw new Error('profile missing')
 
-  const tableSortMethod = useAtom(tableSortMethodAtom)
+  const rowList: FrameDiff[] = useMemo(() => {
+    // TODO: Implement search filtering
+    const rowList: FrameDiff[] = frameDiffs.filter(f => f)
+
+    switch (sortMethod.field) {
+      case CompareSortField.SYMBOL_NAME: {
+        sortBy(rowList, ({beforeFrame, afterFrame}) =>
+          (beforeFrame ?? afterFrame).name.toLowerCase(),
+        )
+        break
+      }
+      case CompareSortField.TOTAL_CHANGE: {
+        sortBy(rowList, diff => diff.totalWeightDiff)
+        break
+      }
+      case CompareSortField.TOTAL_PERCENT_CHANGE: {
+        sortBy(rowList, diff => diff.totalWeightPercentIncrease)
+        break
+      }
+      case CompareSortField.SELF_CHANGE: {
+        sortBy(rowList, diff => diff.selfWeightDiff)
+        break
+      }
+      case CompareSortField.SELF_PERCENT_CHANGE: {
+        sortBy(rowList, diff => diff.selfWeightPercentIncrease)
+        break
+      }
+    }
+
+    if (sortMethod.direction === SortDirection.DESCENDING) {
+      rowList.reverse()
+    }
+
+    return rowList
+  }, [frameDiffs, sortMethod])
+
   const theme = useTheme()
   const {callerCallee} = sandwichViewState
   const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
@@ -460,12 +505,12 @@ export const CompareTableViewContainer = memo((ownProps: CompareTableViewContain
   return (
     <CompareTableView
       profile={profile}
-      frameDiffs={frameDiffs}
+      frameDiffs={rowList}
       selectedFrame={selectedFrame}
       getCSSColorForFrame={getCSSColorForFrame}
-      sortMethod={tableSortMethod}
+      sortMethod={sortMethod}
       setSelectedFrame={setSelectedFrame}
-      setSortMethod={tableSortMethodAtom.set}
+      setSortMethod={setSortMethod}
       searchIsActive={searchIsActive}
       searchQuery={searchQuery}
     />
