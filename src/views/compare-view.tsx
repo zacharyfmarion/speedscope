@@ -6,6 +6,7 @@ import {
   SortDirection,
   SortField,
   compareProfileGroupAtom,
+  flattenRecursionAtom,
   profileGroupAtom,
   tableSortMethodAtom,
 } from '../app-state'
@@ -20,7 +21,7 @@ import {SandwichViewContext, SandwichViewContextData} from './sandwich-view'
 import {ProfileSearchContext} from './search-view'
 import {sortBy} from '../lib/utils'
 import {getFrameDiffs} from '../app-state/getters'
-import {CalleeFlamegraphView} from './callee-flamegraph-view'
+import {CalleeFlamegraphView, getCalleeProfile} from './callee-flamegraph-view'
 
 type CompareViewProps = {
   profileGroup: ProfileGroupState
@@ -59,6 +60,40 @@ const CompareView = memo(function CompareView({
   const beforeCallerCallee = activeProfileState.sandwichViewState.callerCallee
   const afterCallerCallee = compareActiveProfileState.sandwichViewState.callerCallee
 
+  const flattenRecursion = useAtom(flattenRecursionAtom)
+
+  /**
+   * Set the total weight to be the maximum of the total weights of the two callee
+   * profiles so the two flamegraphs share the same timescale
+   */
+  const getTotalWeight = useCallback(() => {
+    if (!beforeCallerCallee) {
+      throw new Error('Before callee not defined')
+    }
+
+    const beforeCalleeProfile = getCalleeProfile({
+      profile: beforeProfile,
+      frame: beforeCallerCallee.selectedFrame,
+      flattenRecursion,
+    })
+
+    const beforeCalleeTotalWeight = beforeCalleeProfile.getTotalNonIdleWeight()
+
+    if (afterCallerCallee) {
+      const afterCalleeProfile = getCalleeProfile({
+        profile: afterProfile,
+        frame: afterCallerCallee?.selectedFrame,
+        flattenRecursion,
+      })
+
+      const afterCalleeTotalWeight = afterCalleeProfile.getTotalNonIdleWeight()
+
+      return Math.max(beforeCalleeTotalWeight, afterCalleeTotalWeight)
+    }
+
+    return beforeCalleeTotalWeight
+  }, [beforeProfile, afterProfile, beforeCallerCallee, afterCallerCallee, flattenRecursion])
+
   useEffect(() => {
     console.log('beforeCallerCallee')
   }, [beforeCallerCallee])
@@ -78,6 +113,7 @@ const CompareView = memo(function CompareView({
             <CalleeFlamegraphView
               profile={beforeProfile}
               callerCallee={beforeCallerCallee}
+              getTotalWeight={getTotalWeight}
               profileGroupAtom={profileGroupAtom}
               flamechartId={FlamechartID.SANDWICH_CALLEES}
             />
@@ -92,6 +128,7 @@ const CompareView = memo(function CompareView({
             <CalleeFlamegraphView
               profile={afterProfile}
               callerCallee={afterCallerCallee}
+              getTotalWeight={getTotalWeight}
               profileGroupAtom={compareProfileGroupAtom}
               flamechartId={FlamechartID.SANDWICH_CALLEES_AFTER}
             />

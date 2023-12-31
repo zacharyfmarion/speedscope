@@ -10,13 +10,14 @@ import {
 } from '../app-state/getters'
 import {FlamechartWrapper} from './flamechart-wrapper'
 import {h} from 'preact'
-import {memo} from 'preact/compat'
+import {memo, useMemo} from 'preact/compat'
 import {useTheme} from './themes/theme'
 import {CallerCalleeState, FlamechartID, ProfileGroupAtom} from '../app-state/profile-group'
 import {flattenRecursionAtom, glCanvasAtom} from '../app-state'
 import {useAtom} from '../lib/atom'
 
-const getCalleeProfile = memoizeByShallowEquality<
+// TODO: move this import
+export const getCalleeProfile = memoizeByShallowEquality<
   {
     profile: Profile
     frame: Frame
@@ -31,12 +32,14 @@ const getCalleeProfile = memoizeByShallowEquality<
 const getCalleeFlamegraph = memoizeByShallowEquality<
   {
     calleeProfile: Profile
+    getTotalWeight: () => number
     getColorBucketForFrame: (frame: Frame) => number
   },
   Flamechart
->(({calleeProfile, getColorBucketForFrame}) => {
+>(({calleeProfile, getTotalWeight, getColorBucketForFrame}) => {
   return new Flamechart({
-    getTotalWeight: calleeProfile.getTotalNonIdleWeight.bind(calleeProfile),
+    // getTotalWeight: calleeProfile.getTotalNonIdleWeight.bind(calleeProfile),
+    getTotalWeight,
     forEachCall: calleeProfile.forEachCallGrouped.bind(calleeProfile),
     formatValue: calleeProfile.formatValue.bind(calleeProfile),
     getColorBucketForFrame,
@@ -49,6 +52,7 @@ type CalleeFlamegraphViewProps = {
   profile: Profile
   callerCallee: CallerCalleeState
   flamechartId?: FlamechartID
+  getTotalWeight?: () => number
   // TODO: I don't like overloading this word
   // Maybe rename the atom?
   profileGroupAtom: ProfileGroupAtom
@@ -58,6 +62,7 @@ export const CalleeFlamegraphView = memo(
   ({
     profile,
     callerCallee,
+    getTotalWeight,
     profileGroupAtom,
     flamechartId = FlamechartID.SANDWICH_CALLEES,
   }: CalleeFlamegraphViewProps) => {
@@ -76,8 +81,17 @@ export const CalleeFlamegraphView = memo(
     const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
     const canvasContext = getCanvasContext({theme, canvas: glCanvas})
 
+    const calleeProfile = getCalleeProfile({profile, frame: selectedFrame, flattenRecursion})
+
+    const getCalleeTotalWeight = useMemo(() => {
+      if (getTotalWeight) return getTotalWeight
+
+      return calleeProfile.getTotalNonIdleWeight.bind(calleeProfile)
+    }, [getTotalWeight, calleeProfile])
+
     const flamechart = getCalleeFlamegraph({
-      calleeProfile: getCalleeProfile({profile, frame: selectedFrame, flattenRecursion}),
+      calleeProfile,
+      getTotalWeight: getCalleeTotalWeight,
       getColorBucketForFrame,
     })
     const flamechartRenderer = getCalleeFlamegraphRenderer({canvasContext, flamechart})
