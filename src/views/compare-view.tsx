@@ -105,14 +105,6 @@ const CompareView = memo(function CompareView({
     return beforeCalleeTotalWeight
   }, [beforeProfile, afterProfile, beforeCallerCallee, afterCallerCallee, flattenRecursion])
 
-  useEffect(() => {
-    console.log('beforeCallerCallee')
-  }, [beforeCallerCallee])
-
-  useEffect(() => {
-    console.log('afterCallerCallee')
-  }, [afterCallerCallee])
-
   if (selectedFrame) {
     flamegraphViews = (
       <div className={css(commonStyle.fillY, style.callersAndCallees, commonStyle.vbox)}>

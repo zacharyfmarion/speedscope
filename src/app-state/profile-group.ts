@@ -44,7 +44,6 @@ export enum FlamechartID {
   CHRONO = 'CHRONO',
   SANDWICH_INVERTED_CALLERS = 'SANDWICH_INVERTED_CALLERS',
   SANDWICH_CALLEES = 'SANDWICH_CALLEES',
-  SANDWICH_CALLEES_AFTER = 'SANDWICH_CALLEES_AFTER',
 }
 
 let initialFlameChartViewState: FlamechartViewState = {
@@ -69,7 +68,6 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
   }
 
   setProfileGroup = (group: ProfileGroup) => {
-    console.log('setProfileGroup')
     this.set({
       name: group.name,
       indexToView: group.indexToView,
@@ -83,7 +81,6 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
   }
 
   setProfileIndexToView = (indexToView: number) => {
-    console.log('setProfileIndexToView')
     if (this.state == null) return
 
     indexToView = clamp(indexToView, 0, this.state.profiles.length - 1)
@@ -95,7 +92,6 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
   }
 
   private updateActiveProfileState(fn: (profileState: ProfileState) => ProfileState) {
-    console.log('updateActiveProfileState')
     if (this.state == null) return
     const {indexToView, profiles} = this.state
     this.set({
@@ -110,7 +106,6 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
   private updateActiveSandwichViewState(
     fn: (sandwichViewState: SandwichViewState) => SandwichViewState,
   ) {
-    console.log('updateActiveSandwichViewState')
     this.updateActiveProfileState(p => ({
       ...p,
       sandwichViewState: fn(p.sandwichViewState),
@@ -118,7 +113,6 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
   }
 
   setSelectedFrame = (frame: Frame | null) => {
-    console.log('setSelectedFrame')
     if (this.state == null) return
 
     const profile = this.getActiveProfile()
@@ -144,7 +138,6 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
     id: FlamechartID,
     fn: (flamechartViewState: FlamechartViewState) => FlamechartViewState,
   ) {
-    console.log('updateFlamechartState')
     switch (id) {
       case FlamechartID.CHRONO: {
         this.updateActiveProfileState(p => ({
@@ -162,8 +155,7 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
         break
       }
 
-      case FlamechartID.SANDWICH_CALLEES:
-      case FlamechartID.SANDWICH_CALLEES_AFTER: {
+      case FlamechartID.SANDWICH_CALLEES: {
         this.updateActiveSandwichViewState(s => ({
           ...s,
           callerCallee:
@@ -197,7 +189,6 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
     id: FlamechartID,
     hover: {node: CallTreeNode; event: MouseEvent} | null,
   ) {
-    console.log('setFlamechartHoveredNode')
     this.updateFlamechartState(id, f => ({
       ...f,
       hover,
@@ -205,7 +196,6 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
   }
 
   setSelectedNode(id: FlamechartID, selectedNode: CallTreeNode | null) {
-    console.log('setSelectedNode')
     this.updateFlamechartState(id, f => ({
       ...f,
       selectedNode,
@@ -213,20 +203,6 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
   }
 
   setConfigSpaceViewportRect(id: FlamechartID, configSpaceViewportRect: Rect) {
-    console.log('setConfigSpaceViewportRect', this.debugKey, id, configSpaceViewportRect)
-
-    // TODO: Not sure why this keeps getting called with the same values
-    if ([FlamechartID.SANDWICH_CALLEES, FlamechartID.SANDWICH_CALLEES_AFTER].includes(id)) {
-      const activeProfile = this.getActiveProfile()
-      const viewportRect =
-        activeProfile?.sandwichViewState?.callerCallee?.calleeFlamegraph?.configSpaceViewportRect
-
-      if (viewportRect?.equals(configSpaceViewportRect)) {
-        // Don't trigger a re-render
-        return
-      }
-    }
-
     this.updateFlamechartState(id, f => ({
       ...f,
       configSpaceViewportRect,
@@ -234,20 +210,6 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
   }
 
   setLogicalSpaceViewportSize(id: FlamechartID, logicalSpaceViewportSize: Vec2) {
-    console.log('setLogicalSpaceViewportSize')
-
-    // TODO: Not sure why this keeps getting called with the same values
-    if ([FlamechartID.SANDWICH_CALLEES, FlamechartID.SANDWICH_CALLEES_AFTER].includes(id)) {
-      const activeProfile = this.getActiveProfile()
-      const viewportSize =
-        activeProfile?.sandwichViewState?.callerCallee?.calleeFlamegraph?.logicalSpaceViewportSize
-
-      if (viewportSize?.equals(logicalSpaceViewportSize)) {
-        // Don't trigger a re-render
-        return
-      }
-    }
-
     this.updateFlamechartState(id, f => ({
       ...f,
       logicalSpaceViewportSize,
@@ -255,13 +217,11 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
   }
 
   clearHoverNode() {
-    console.log('clearHoverNode')
     // TODO(jlfwong): This causes 4 separate observer events. This is probably
     // fine, since I hope that Preact/React are smart about batching re-renders?
     this.setFlamechartHoveredNode(FlamechartID.CHRONO, null)
     this.setFlamechartHoveredNode(FlamechartID.LEFT_HEAVY, null)
     this.setFlamechartHoveredNode(FlamechartID.SANDWICH_CALLEES, null)
-    this.setFlamechartHoveredNode(FlamechartID.SANDWICH_CALLEES_AFTER, null)
     this.setFlamechartHoveredNode(FlamechartID.SANDWICH_INVERTED_CALLERS, null)
   }
 }
