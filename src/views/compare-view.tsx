@@ -1,6 +1,6 @@
 import {JSX, h} from 'preact'
 import {memo, useCallback, useContext, useEffect, useMemo} from 'preact/compat'
-import {ActiveProfileState} from '../app-state/active-profile-state'
+import {ActiveProfileState, useActiveCompareProfileState} from '../app-state/active-profile-state'
 import {useAtom} from '../lib/atom'
 import {
   SortDirection,
@@ -141,6 +141,7 @@ const CompareView = memo(function CompareView({
     <div className={css(commonStyle.hbox, commonStyle.fillY)}>
       <div className={css(style.tableView)}>
         <CompareTableViewContainer
+          compareActiveProfileState={compareActiveProfileState}
           activeProfileState={activeProfileState}
           frameDiffs={frameDiffs}
         />
