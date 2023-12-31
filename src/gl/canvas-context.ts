@@ -27,7 +27,7 @@ export class CanvasContext {
 
     // Whenever the canvas is resized, draw immediately. This prevents
     // flickering during resizing.
-    // this.gl.addAfterResizeEventHandler(this.onBeforeFrame)
+    this.gl.addAfterResizeEventHandler(this.onBeforeFrame)
 
     const webGLInfo = this.gl.getWebGLInfo()
     if (webGLInfo) {

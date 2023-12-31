@@ -63,9 +63,7 @@ export enum SortField {
 export enum CompareSortField {
   SYMBOL_NAME,
   SELF_CHANGE,
-  SELF_PERCENT_CHANGE,
   TOTAL_CHANGE,
-  TOTAL_PERCENT_CHANGE,
 }
 
 export enum SortDirection {
