@@ -162,7 +162,8 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
         break
       }
 
-      case FlamechartID.SANDWICH_CALLEES: {
+      case FlamechartID.SANDWICH_CALLEES:
+      case FlamechartID.SANDWICH_CALLEES_AFTER: {
         this.updateActiveSandwichViewState(s => ({
           ...s,
           callerCallee:
@@ -215,7 +216,7 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
     console.log('setConfigSpaceViewportRect', id, configSpaceViewportRect)
 
     // TODO: Not sure why this keeps getting called with the same values
-    if (id === FlamechartID.SANDWICH_CALLEES) {
+    if ([FlamechartID.SANDWICH_CALLEES, FlamechartID.SANDWICH_CALLEES_AFTER].includes(id)) {
       const activeProfile = this.getActiveProfile()
       const viewportRect =
         activeProfile?.sandwichViewState?.callerCallee?.calleeFlamegraph?.configSpaceViewportRect
@@ -236,7 +237,7 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
     console.log('setLogicalSpaceViewportSize')
 
     // TODO: Not sure why this keeps getting called with the same values
-    if (id === FlamechartID.SANDWICH_CALLEES) {
+    if ([FlamechartID.SANDWICH_CALLEES, FlamechartID.SANDWICH_CALLEES_AFTER].includes(id)) {
       const activeProfile = this.getActiveProfile()
       const viewportSize =
         activeProfile?.sandwichViewState?.callerCallee?.calleeFlamegraph?.logicalSpaceViewportSize
@@ -260,6 +261,7 @@ export class ProfileGroupAtom extends Atom<ProfileGroupState> {
     this.setFlamechartHoveredNode(FlamechartID.CHRONO, null)
     this.setFlamechartHoveredNode(FlamechartID.LEFT_HEAVY, null)
     this.setFlamechartHoveredNode(FlamechartID.SANDWICH_CALLEES, null)
+    this.setFlamechartHoveredNode(FlamechartID.SANDWICH_CALLEES_AFTER, null)
     this.setFlamechartHoveredNode(FlamechartID.SANDWICH_INVERTED_CALLERS, null)
   }
 }

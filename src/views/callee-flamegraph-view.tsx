@@ -10,7 +10,7 @@ import {
 } from '../app-state/getters'
 import {FlamechartWrapper} from './flamechart-wrapper'
 import {h} from 'preact'
-import {memo} from 'preact/compat'
+import {memo, useEffect} from 'preact/compat'
 import {useTheme} from './themes/theme'
 import {CallerCalleeState, FlamechartID} from '../app-state/profile-group'
 import {compareProfileGroupAtom, flattenRecursionAtom} from '../app-state'
@@ -49,10 +49,16 @@ type CalleeFlamegraphViewProps = {
   profile: Profile
   callerCallee: CallerCalleeState
   glCanvas: HTMLCanvasElement
+  flamechartId?: FlamechartID
 }
 
 export const CalleeFlamegraphView = memo(
-  ({glCanvas, profile, callerCallee}: CalleeFlamegraphViewProps) => {
+  ({
+    glCanvas,
+    profile,
+    callerCallee,
+    flamechartId = FlamechartID.SANDWICH_CALLEES,
+  }: CalleeFlamegraphViewProps) => {
     const flattenRecursion = useAtom(flattenRecursionAtom)
     const theme = useTheme()
 
@@ -81,7 +87,7 @@ export const CalleeFlamegraphView = memo(
         flamechartRenderer={flamechartRenderer}
         canvasContext={canvasContext}
         getCSSColorForFrame={getCSSColorForFrame}
-        {...useFlamechartSetters(FlamechartID.SANDWICH_CALLEES, compareProfileGroupAtom)}
+        {...useFlamechartSetters(flamechartId, compareProfileGroupAtom)}
         {...callerCallee.calleeFlamegraph}
         // This overrides the setSelectedNode specified in useFlamechartSettesr
         setSelectedNode={noop}
