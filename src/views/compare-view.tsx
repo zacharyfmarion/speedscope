@@ -1,6 +1,6 @@
 import {JSX, h} from 'preact'
 import {memo, useCallback, useContext, useEffect, useMemo} from 'preact/compat'
-import {ActiveProfileState} from '../app-state/active-profile-state'
+import {ActiveProfileState, useActiveCompareProfileState} from '../app-state/active-profile-state'
 import {useAtom} from '../lib/atom'
 import {
   SortDirection,
@@ -141,6 +141,7 @@ const CompareView = memo(function CompareView({
     <div className={css(commonStyle.hbox, commonStyle.fillY)}>
       <div className={css(style.tableView)}>
         <CompareTableViewContainer
+          compareActiveProfileState={compareActiveProfileState}
           activeProfileState={activeProfileState}
           frameDiffs={frameDiffs}
         />
@@ -162,11 +163,12 @@ export const CompareViewContainer = memo(
   ({activeProfileState, compareActiveProfileState, onFileSelect}: CompareViewContainerProps) => {
     const style = getStyle(useTheme())
 
+    // TODO: Dedupe this with compare-table-view
     const {sandwichViewState, index} = activeProfileState
-    const {callerCallee} = sandwichViewState
-
     const theme = useTheme()
-    // TODO: Does this even get used?
+
+    // TODO: Refactor this so that we can correctly determine which frame to set
+    // Right now I'm not sure this gets used
     const setSelectedFrame = useCallback((selectedFrame: Frame | null) => {
       profileGroupAtom.setSelectedFrame(selectedFrame)
     }, [])
@@ -175,7 +177,9 @@ export const CompareViewContainer = memo(
     const tableSortMethod = useAtom(tableSortMethodAtom)
     const profileSearchResults = useContext(ProfileSearchContext)
 
-    const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
+    const selectedFrame =
+      sandwichViewState.callerCallee?.selectedFrame ??
+      compareActiveProfileState?.sandwichViewState?.callerCallee?.selectedFrame
 
     const rowList: Frame[] = useMemo(() => {
       const rowList: Frame[] = []
@@ -226,15 +230,18 @@ export const CompareViewContainer = memo(
       }
     }, [profileSearchResults])
 
-    const contextData: SandwichViewContextData = {
-      rowList,
-      selectedFrame,
-      setSelectedFrame,
-      getIndexForFrame,
-      getSearchMatchForFrame,
-    }
+    const contextData: SandwichViewContextData = useMemo(
+      () => ({
+        rowList,
+        selectedFrame,
+        setSelectedFrame,
+        getIndexForFrame,
+        getSearchMatchForFrame,
+      }),
+      [rowList, selectedFrame, setSelectedFrame, getIndexForFrame, getSearchMatchForFrame],
+    )
 
-    // TODO: Deal with importing loading UI
+    // TODO: Make the importing loading UI better with the progress bar
     if (!compareActiveProfileState) {
       return (
         <div className={css(commonStyle.hbox, commonStyle.fillY, style.landingContainer)}>

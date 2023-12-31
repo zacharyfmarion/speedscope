@@ -74,19 +74,6 @@ function SortIcon(props: SortIconProps) {
   )
 }
 
-interface CompareTableRowViewProps {
-  frameDiff: FrameDiff
-  matchedRanges: [number, number][] | null
-  index: number
-  profile: Profile
-  selectedFrame: Frame | null
-  setSelectedDiff: (f: FrameDiff) => void
-  getCSSColorForFrame: (frame: Frame) => string
-  // TODO: These names are a bit unclear
-  selfPercent: number
-  totalPercent: number
-}
-
 function highlightRanges(
   text: string,
   ranges: [number, number][],
@@ -108,6 +95,19 @@ function getCSSColorForDiff(diff: number, theme: Theme): string {
   if (diff > 0) return theme.negative
   if (diff < 0) return theme.positive
   return 'gray'
+}
+
+interface CompareTableRowViewProps {
+  frameDiff: FrameDiff
+  matchedRanges: [number, number][] | null
+  index: number
+  profile: Profile
+  selectedFrame: Frame | undefined
+  setSelectedDiff: (f: FrameDiff) => void
+  getCSSColorForFrame: (frame: Frame) => string
+  // TODO: These names are a bit unclear
+  selfPercent: number
+  totalPercent: number
 }
 
 const CompareTableRowView = ({
@@ -168,7 +168,7 @@ const CompareTableRowView = ({
 interface CompareTableViewProps {
   profile: Profile
   frameDiffs: FrameDiff[]
-  selectedFrame: Frame | null
+  selectedFrame: Frame | undefined
   getCSSColorForFrame: (frame: Frame) => string
   sortMethod: CompareSortMethod
   setSelectedDiff: (frame: FrameDiff | null) => void
@@ -249,7 +249,7 @@ export const CompareTableView = memo(
               matchedRanges: match == null ? null : match,
               index: i,
               profile: profile,
-              selectedFrame: selectedFrame,
+              selectedFrame,
               setSelectedDiff,
               getCSSColorForFrame: getCSSColorForFrame,
               totalPercent: (frameDiff.totalWeightDiff / largestTotalDiff) * 100,
@@ -458,13 +458,18 @@ const getStyle = withTheme(theme =>
 
 interface CompareTableViewContainerProps {
   activeProfileState: ActiveProfileState
+  compareActiveProfileState: ActiveProfileState
   frameDiffs: FrameDiff[]
 }
 
 // TODO: Deduplicate logic here
 export const CompareTableViewContainer = memo((ownProps: CompareTableViewContainerProps) => {
-  const {activeProfileState, frameDiffs} = ownProps
+  const {activeProfileState, frameDiffs, compareActiveProfileState} = ownProps
+
   const {profile, sandwichViewState} = activeProfileState
+  const {profile: compareProfile, sandwichViewState: compareSandwichViewState} =
+    compareActiveProfileState
+
   const profileSearchResults = useContext(ProfileSearchContext)
 
   const [sortMethod, setSortMethod] = useState({
@@ -472,7 +477,7 @@ export const CompareTableViewContainer = memo((ownProps: CompareTableViewContain
     direction: SortDirection.DESCENDING,
   })
 
-  if (!profile) throw new Error('profile missing')
+  if (!profile || !compareProfile) throw new Error('profile missing')
 
   const rowList: FrameDiff[] = useMemo(() => {
     const rowList: FrameDiff[] = frameDiffs.filter(frameDiff => {
@@ -506,18 +511,18 @@ export const CompareTableViewContainer = memo((ownProps: CompareTableViewContain
   }, [frameDiffs, sortMethod, profileSearchResults])
 
   const theme = useTheme()
-  const {callerCallee} = sandwichViewState
-  const selectedFrame = callerCallee ? callerCallee.selectedFrame : null
+
+  const {callerCallee: beforeCallerCallee} = sandwichViewState
+  const {callerCallee: afterCallerCallee} = compareSandwichViewState
+
+  const selectedFrame = beforeCallerCallee?.selectedFrame ?? afterCallerCallee?.selectedFrame
+
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
 
   const setSelectedDiff = useCallback((frameDiff: FrameDiff | null) => {
-    if (frameDiff?.beforeFrame) {
-      profileGroupAtom.setSelectedFrame(frameDiff.beforeFrame)
-    }
-    if (frameDiff?.afterFrame) {
-      compareProfileGroupAtom.setSelectedFrame(frameDiff.afterFrame)
-    }
+    profileGroupAtom.setSelectedFrame(frameDiff?.beforeFrame ?? null)
+    compareProfileGroupAtom.setSelectedFrame(frameDiff?.afterFrame ?? null)
   }, [])
 
   const searchIsActive = useAtom(searchIsActiveAtom)
