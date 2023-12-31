@@ -18,10 +18,10 @@ import {
   searchQueryAtom,
   CompareSortField,
   CompareSortMethod,
-  COMPARE_SORT_FIELDS,
 } from '../app-state'
 import {useAtom} from '../lib/atom'
 import {ActiveProfileState} from '../app-state/active-profile-state'
+import {ProfileSearchContext} from './search-view'
 
 interface HBarProps {
   perc: number
@@ -104,15 +104,12 @@ const CompareTableRowView = ({
   matchedRanges,
   profile,
   index,
-  // selectedFrame,
-  // setSelectedFrame,
+  selectedFrame,
+  setSelectedFrame,
 }: CompareTableRowViewProps) => {
   const style = getStyle(useTheme())
   const {totalWeightDiff, totalWeightPercentIncrease, selfWeightDiff, selfWeightPercentIncrease} =
     frameDiff
-
-  // TODO
-  const selected = false
 
   const frame = useMemo(() => {
     return frameDiff.beforeFrame ?? frameDiff.afterFrame
@@ -122,11 +119,11 @@ const CompareTableRowView = ({
     console.warn('Got frame diff without valid frames')
   }
 
-  // We intentionally use index rather than frame.key here as the tr key
-  // in order to re-use rows when sorting rather than creating all new elements.
+  const selected = frame === selectedFrame
+
   return (
     <tr
-      key={`${index}`}
+      key={`${frame.key}`}
       // onClick={setSelectedFrame.bind(null, frame)}
       className={css(
         style.tableRow,
@@ -134,12 +131,15 @@ const CompareTableRowView = ({
         selected && style.tableRowSelected,
       )}
     >
-      <td className={css(style.numericCell)}>{profile.formatValue(totalWeightDiff)}</td>
-      <td className={css(style.numericCell)}>{formatPercent(totalWeightPercentIncrease * 100)}</td>
-      <td className={css(style.numericCell)}>{profile.formatValue(selfWeightDiff)}</td>
-      <td className={css(style.numericCell)}>{formatPercent(selfWeightPercentIncrease * 100)}</td>
+      <td className={css(style.numericCell)}>
+        {profile.formatValue(totalWeightDiff)} (
+        {formatPercent(Math.abs(totalWeightPercentIncrease * 100))})
+      </td>
+      <td className={css(style.numericCell)}>
+        {profile.formatValue(selfWeightDiff)} (
+        {formatPercent(Math.abs(selfWeightPercentIncrease * 100))})
+      </td>
       <td title={frame.file} className={css(style.textCell)}>
-        {/* TODO: Make this color based on increase / decrease */}
         <ColorChit color={getCSSColorForDiff(totalWeightDiff)} />
         {matchedRanges
           ? highlightRanges(
@@ -222,12 +222,14 @@ export const CompareTableView = memo(
 
         for (let i = firstIndex; i <= lastIndex; i++) {
           const frameDiff = frameDiffs[i]
-          // const match = sandwichContext.getSearchMatchForFrame(frame)
+          // TODO: Abstract this / make better
+          const frame = frameDiff.beforeFrame ?? frameDiff.afterFrame
+          const match = sandwichContext.getSearchMatchForFrame(frame)
+
           rows.push(
             CompareTableRowView({
               frameDiff,
-              // TODO
-              matchedRanges: null,
+              matchedRanges: match == null ? null : match,
               index: i,
               profile: profile,
               selectedFrame: selectedFrame,
@@ -272,17 +274,20 @@ export const CompareTableView = memo(
     )
 
     const listItems: ListItem[] = useMemo(
-      () =>
-        sandwichContext == null
-          ? []
-          : sandwichContext.rowList.map(f => ({size: Sizes.FRAME_HEIGHT})),
-      [sandwichContext],
+      () => frameDiffs.map(() => ({size: Sizes.FRAME_HEIGHT})),
+      [frameDiffs],
     )
 
-    const handleTableHeaderClick = useCallback(
-      (ev: MouseEvent, sortField: CompareSortField) => {
-        onSortClick(sortField, ev)
-      },
+    const onTotalClick = useCallback(
+      (ev: MouseEvent) => onSortClick(CompareSortField.TOTAL_CHANGE, ev),
+      [onSortClick],
+    )
+    const onSelfClick = useCallback(
+      (ev: MouseEvent) => onSortClick(CompareSortField.SELF_CHANGE, ev),
+      [onSortClick],
+    )
+    const onSymbolNameClick = useCallback(
+      (ev: MouseEvent) => onSortClick(CompareSortField.SYMBOL_NAME, ev),
       [onSortClick],
     )
 
@@ -291,14 +296,30 @@ export const CompareTableView = memo(
         <table className={css(style.tableView)}>
           <thead className={css(style.tableHeader)}>
             <tr>
-              {Object.entries(COMPARE_SORT_FIELDS).map(([name, field]) => (
-                <CompareTableHeader
-                  field={field}
-                  name={name}
-                  sortMethod={sortMethod}
-                  onClick={handleTableHeaderClick}
+              <th className={css(style.numericCell)} onClick={onTotalClick}>
+                <SortIcon
+                  activeDirection={
+                    sortMethod.field === CompareSortField.TOTAL_CHANGE ? sortMethod.direction : null
+                  }
                 />
-              ))}
+                Total Change
+              </th>
+              <th className={css(style.numericCell)} onClick={onSelfClick}>
+                <SortIcon
+                  activeDirection={
+                    sortMethod.field === CompareSortField.SELF_CHANGE ? sortMethod.direction : null
+                  }
+                />
+                Self Change
+              </th>
+              <th className={css(style.textCell)} onClick={onSymbolNameClick}>
+                <SortIcon
+                  activeDirection={
+                    sortMethod.field === CompareSortField.SYMBOL_NAME ? sortMethod.direction : null
+                  }
+                />
+                Symbol Name
+              </th>
             </tr>
           </thead>
         </table>
@@ -315,34 +336,6 @@ export const CompareTableView = memo(
     )
   },
 )
-
-type CompareTableHeaderProps = {
-  onClick: (e: MouseEvent, field: CompareSortField) => void
-  name: string
-  field: CompareSortField
-  sortMethod: CompareSortMethod
-}
-
-const CompareTableHeader = ({field, onClick, sortMethod, name}: CompareTableHeaderProps) => {
-  const style = getStyle(useTheme())
-
-  const handleClick = useCallback(
-    (e: MouseEvent) => {
-      onClick(e, field)
-    },
-    [field, onClick],
-  )
-
-  return (
-    <th
-      className={css(field === CompareSortField.SYMBOL_NAME ? style.textCell : style.numericCell)}
-      onClick={handleClick}
-    >
-      <SortIcon activeDirection={sortMethod.field === field ? sortMethod.direction : null} />
-      {name}
-    </th>
-  )
-}
 
 const getStyle = withTheme(theme =>
   StyleSheet.create({
@@ -400,8 +393,8 @@ const getStyle = withTheme(theme =>
       position: 'relative',
       textAlign: 'right',
       paddingRight: Sizes.FRAME_HEIGHT,
-      width: 100,
-      minWidth: 100,
+      width: 6 * Sizes.FRAME_HEIGHT,
+      minWidth: 6 * Sizes.FRAME_HEIGHT,
     },
     textCell: {
       textOverflow: 'ellipsis',
@@ -446,6 +439,7 @@ interface CompareTableViewContainerProps {
 export const CompareTableViewContainer = memo((ownProps: CompareTableViewContainerProps) => {
   const {activeProfileState, frameDiffs} = ownProps
   const {profile, sandwichViewState} = activeProfileState
+  const profileSearchResults = useContext(ProfileSearchContext)
 
   const [sortMethod, setSortMethod] = useState({
     field: CompareSortField.TOTAL_CHANGE,
@@ -455,8 +449,10 @@ export const CompareTableViewContainer = memo((ownProps: CompareTableViewContain
   if (!profile) throw new Error('profile missing')
 
   const rowList: FrameDiff[] = useMemo(() => {
-    // TODO: Implement search filtering
-    const rowList: FrameDiff[] = frameDiffs.filter(f => f)
+    const rowList: FrameDiff[] = frameDiffs.filter(frameDiff => {
+      const frame = frameDiff.beforeFrame ?? frameDiff.afterFrame
+      return !profileSearchResults || profileSearchResults.getMatchForFrame(frame)
+    })
 
     switch (sortMethod.field) {
       case CompareSortField.SYMBOL_NAME: {
@@ -466,19 +462,19 @@ export const CompareTableViewContainer = memo((ownProps: CompareTableViewContain
         break
       }
       case CompareSortField.TOTAL_CHANGE: {
-        sortBy(rowList, diff => diff.totalWeightDiff)
+        sortBy(rowList, diff => Math.abs(diff.totalWeightDiff))
         break
       }
       case CompareSortField.TOTAL_PERCENT_CHANGE: {
-        sortBy(rowList, diff => diff.totalWeightPercentIncrease)
+        sortBy(rowList, diff => Math.abs(diff.totalWeightPercentIncrease))
         break
       }
       case CompareSortField.SELF_CHANGE: {
-        sortBy(rowList, diff => diff.selfWeightDiff)
+        sortBy(rowList, diff => Math.abs(diff.selfWeightDiff))
         break
       }
       case CompareSortField.SELF_PERCENT_CHANGE: {
-        sortBy(rowList, diff => diff.selfWeightPercentIncrease)
+        sortBy(rowList, diff => Math.abs(diff.selfWeightPercentIncrease))
         break
       }
     }
@@ -488,7 +484,7 @@ export const CompareTableViewContainer = memo((ownProps: CompareTableViewContain
     }
 
     return rowList
-  }, [frameDiffs, sortMethod])
+  }, [frameDiffs, sortMethod, profileSearchResults])
 
   const theme = useTheme()
   const {callerCallee} = sandwichViewState

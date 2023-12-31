@@ -214,6 +214,7 @@ export const ProfileTableView = memo(
         for (let i = firstIndex; i <= lastIndex; i++) {
           const frame = sandwichContext.rowList[i]
           const match = sandwichContext.getSearchMatchForFrame(frame)
+
           rows.push(
             ProfileTableRowView({
               frame,

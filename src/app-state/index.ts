@@ -68,14 +68,6 @@ export enum CompareSortField {
   TOTAL_PERCENT_CHANGE,
 }
 
-export const COMPARE_SORT_FIELDS: Record<string, CompareSortField> = {
-  'Total Change': CompareSortField.TOTAL_CHANGE,
-  'Total % Change': CompareSortField.TOTAL_PERCENT_CHANGE,
-  'Self Change': CompareSortField.SELF_CHANGE,
-  'Self % Change': CompareSortField.SELF_PERCENT_CHANGE,
-  'Symbol Name': CompareSortField.SYMBOL_NAME,
-}
-
 export enum SortDirection {
   ASCENDING,
   DESCENDING,

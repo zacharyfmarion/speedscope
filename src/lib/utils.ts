@@ -97,6 +97,10 @@ export function formatPercent(percent: number) {
   return formattedPercent
 }
 
+export function formatFullPercent(percent: number) {
+  return `${percent.toFixed(0)}%`
+}
+
 /**
  * Calculates the fractional part of a given number. For example fract(3.7) returns 0.7
  */
