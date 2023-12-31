@@ -16,6 +16,7 @@ enum Colors {
   BLUE = '#00769B',
   PALE_BLUE = '#004E75',
   GREEN = '#0F8A42',
+  RED = '#C03737',
   LIGHT_BROWN = '#D6AE24',
   BROWN = '#A66F1C',
 }
@@ -63,6 +64,9 @@ export const darkTheme: Theme = {
   searchMatchTextColor: Colors.DARKER_GRAY,
   searchMatchPrimaryColor: Colors.BROWN,
   searchMatchSecondaryColor: Colors.LIGHT_BROWN,
+
+  positive: Colors.GREEN,
+  negative: Colors.RED,
 
   colorForBucket,
   colorForBucketGLSL,

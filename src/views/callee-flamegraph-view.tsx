@@ -38,7 +38,6 @@ const getCalleeFlamegraph = memoizeByShallowEquality<
   Flamechart
 >(({calleeProfile, getTotalWeight, getColorBucketForFrame}) => {
   return new Flamechart({
-    // getTotalWeight: calleeProfile.getTotalNonIdleWeight.bind(calleeProfile),
     getTotalWeight,
     forEachCall: calleeProfile.forEachCallGrouped.bind(calleeProfile),
     formatValue: calleeProfile.formatValue.bind(calleeProfile),
@@ -51,7 +50,6 @@ const getCalleeFlamegraphRenderer = createMemoizedFlamechartRenderer()
 type CalleeFlamegraphViewProps = {
   profile: Profile
   callerCallee: CallerCalleeState | null
-  flamechartId?: FlamechartID
   getTotalWeight?: () => number
   // TODO: I don't like overloading this word
   // Maybe rename the atom?
@@ -59,13 +57,7 @@ type CalleeFlamegraphViewProps = {
 }
 
 export const CalleeFlamegraphView = memo(
-  ({
-    profile,
-    callerCallee,
-    getTotalWeight,
-    profileGroupAtom,
-    flamechartId = FlamechartID.SANDWICH_CALLEES,
-  }: CalleeFlamegraphViewProps) => {
+  ({profile, callerCallee, getTotalWeight, profileGroupAtom}: CalleeFlamegraphViewProps) => {
     const flattenRecursion = useAtom(flattenRecursionAtom)
     const glCanvas = useAtom(glCanvasAtom)
     const theme = useTheme()
@@ -104,7 +96,7 @@ export const CalleeFlamegraphView = memo(
         flamechartRenderer={flamechartRenderer}
         canvasContext={canvasContext}
         getCSSColorForFrame={getCSSColorForFrame}
-        {...useFlamechartSetters(flamechartId, profileGroupAtom)}
+        {...useFlamechartSetters(FlamechartID.SANDWICH_CALLEES, profileGroupAtom)}
         {...callerCallee.calleeFlamegraph}
         // This overrides the setSelectedNode specified in useFlamechartSettesr
         setSelectedNode={noop}

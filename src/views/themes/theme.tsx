@@ -27,6 +27,9 @@ export interface Theme {
   searchMatchPrimaryColor: string
   searchMatchSecondaryColor: string
 
+  negative: string
+  positive: string
+
   colorForBucket: (t: number) => Color
   colorForBucketGLSL: string
 }

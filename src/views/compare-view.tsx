@@ -10,7 +10,6 @@ import {
   profileGroupAtom,
   tableSortMethodAtom,
 } from '../app-state'
-import {FlamechartID, ProfileGroupState} from '../app-state/profile-group'
 import {Theme, useTheme, withTheme} from './themes/theme'
 import {Duration, FontSize, Sizes, commonStyle} from './style'
 import {StyleSheet, css} from 'aphrodite'
@@ -24,8 +23,6 @@ import {getFrameDiffs} from '../app-state/getters'
 import {CalleeFlamegraphView, getCalleeProfile} from './callee-flamegraph-view'
 
 type CompareViewProps = {
-  profileGroup: ProfileGroupState
-  compareProfileGroup: ProfileGroupState
   selectedFrame: Frame | null
   profileIndex: number
   theme: Theme
@@ -118,7 +115,6 @@ const CompareView = memo(function CompareView({
               callerCallee={beforeCallerCallee}
               getTotalWeight={getTotalWeight}
               profileGroupAtom={profileGroupAtom}
-              flamechartId={FlamechartID.SANDWICH_CALLEES}
             />
           )}
         </div>
@@ -133,7 +129,6 @@ const CompareView = memo(function CompareView({
               callerCallee={afterCallerCallee}
               getTotalWeight={getTotalWeight}
               profileGroupAtom={compareProfileGroupAtom}
-              flamechartId={FlamechartID.SANDWICH_CALLEES_AFTER}
             />
           )}
         </div>
@@ -157,7 +152,7 @@ const CompareView = memo(function CompareView({
 
 type CompareViewContainerProps = {
   activeProfileState: ActiveProfileState
-  compareActiveProfileState: ActiveProfileState
+  compareActiveProfileState: ActiveProfileState | null
   onFileSelect: (ev: Event) => void
   glCanvas: HTMLCanvasElement
 }

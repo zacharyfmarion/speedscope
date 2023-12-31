@@ -10,7 +10,7 @@ import {memo} from 'preact/compat'
 import {useCallback, useMemo, useContext, useState} from 'preact/hooks'
 import {SandwichViewContext} from './sandwich-view'
 import {Color} from '../lib/color'
-import {useTheme, withTheme} from './themes/theme'
+import {Theme, useTheme, withTheme} from './themes/theme'
 import {
   SortDirection,
   profileGroupAtom,
@@ -25,15 +25,21 @@ import {ActiveProfileState} from '../app-state/active-profile-state'
 import {ProfileSearchContext} from './search-view'
 
 interface HBarProps {
-  perc: number
+  percent: number
 }
 
-function HBarDisplay(props: HBarProps) {
+function HBarDisplay({percent}: HBarProps) {
   const style = getStyle(useTheme())
+
+  const absolutePercent = Math.min(100, Math.abs(percent))
+  const hBarStyle = percent < 0 ? style.hBarStylePositive : style.hBarStyleNegative
 
   return (
     <div className={css(style.hBarDisplay)}>
-      <div className={css(style.hBarDisplayFilled)} style={{width: `${props.perc}%`}} />
+      <div
+        className={css(style.hBarDisplayFilled, hBarStyle)}
+        style={{width: `${absolutePercent}%`}}
+      />
     </div>
   )
 }
@@ -94,9 +100,9 @@ function highlightRanges(
   return <span>{spans}</span>
 }
 
-function getCSSColorForDiff(diff: number): string {
-  if (diff > 0) return 'red'
-  if (diff < 0) return 'green'
+function getCSSColorForDiff(diff: number, theme: Theme): string {
+  if (diff > 0) return theme.negative
+  if (diff < 0) return theme.positive
   return 'gray'
 }
 
@@ -108,7 +114,8 @@ const CompareTableRowView = ({
   selectedFrame,
   setSelectedDiff,
 }: CompareTableRowViewProps) => {
-  const style = getStyle(useTheme())
+  const theme = useTheme()
+  const style = getStyle(theme)
   const {totalWeightDiff, totalWeightPercentIncrease, selfWeightDiff, selfWeightPercentIncrease} =
     frameDiff
 
@@ -135,13 +142,15 @@ const CompareTableRowView = ({
       <td className={css(style.numericCell)}>
         {profile.formatValue(totalWeightDiff)} (
         {formatPercent(Math.abs(totalWeightPercentIncrease * 100))})
+        <HBarDisplay percent={totalWeightPercentIncrease * 100} />
       </td>
       <td className={css(style.numericCell)}>
         {profile.formatValue(selfWeightDiff)} (
         {formatPercent(Math.abs(selfWeightPercentIncrease * 100))})
+        <HBarDisplay percent={selfWeightPercentIncrease * 100} />
       </td>
       <td title={frame.file} className={css(style.textCell)}>
-        <ColorChit color={getCSSColorForDiff(totalWeightDiff)} />
+        <ColorChit color={getCSSColorForDiff(totalWeightDiff, theme)} />
         {matchedRanges
           ? highlightRanges(
               frameDiff.beforeFrame.name,
@@ -201,9 +210,7 @@ export const CompareTableView = memo(
               break
             }
             case CompareSortField.SELF_CHANGE:
-            case CompareSortField.SELF_PERCENT_CHANGE:
-            case CompareSortField.TOTAL_CHANGE:
-            case CompareSortField.TOTAL_PERCENT_CHANGE: {
+            case CompareSortField.TOTAL_CHANGE: {
               setSortMethod({field, direction: SortDirection.DESCENDING})
               break
             }
@@ -415,8 +422,13 @@ const getStyle = withTheme(theme =>
     hBarDisplayFilled: {
       height: '100%',
       position: 'absolute',
-      background: theme.weightColor,
       right: 0,
+    },
+    hBarStylePositive: {
+      background: theme.positive,
+    },
+    hBarStyleNegative: {
+      background: theme.negative,
     },
     matched: {
       borderBottom: `2px solid ${theme.fgPrimaryColor}`,
@@ -466,16 +478,8 @@ export const CompareTableViewContainer = memo((ownProps: CompareTableViewContain
         sortBy(rowList, diff => Math.abs(diff.totalWeightDiff))
         break
       }
-      case CompareSortField.TOTAL_PERCENT_CHANGE: {
-        sortBy(rowList, diff => Math.abs(diff.totalWeightPercentIncrease))
-        break
-      }
       case CompareSortField.SELF_CHANGE: {
         sortBy(rowList, diff => Math.abs(diff.selfWeightDiff))
-        break
-      }
-      case CompareSortField.SELF_PERCENT_CHANGE: {
-        sortBy(rowList, diff => Math.abs(diff.selfWeightPercentIncrease))
         break
       }
     }
