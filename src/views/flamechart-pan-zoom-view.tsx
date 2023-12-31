@@ -239,10 +239,7 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
           )
 
           if (match) {
-            const rangesToHighlightInTrimmedText = remapRangesToTrimmedText(
-              trimmedText,
-              match
-            )
+            const rangesToHighlightInTrimmedText = remapRangesToTrimmedText(trimmedText, match)
 
             // Once we have the character ranges to highlight, we need to
             // actually do the highlighting.
@@ -546,12 +543,10 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
   private zoom(logicalViewSpaceCenter: Vec2, multiplier: number) {
     this.interactionLock = 'zoom'
 
-    const physicalCenter = this.logicalToPhysicalViewSpace().transformPosition(
-      logicalViewSpaceCenter,
-    )
-    const configSpaceCenter = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(
-      physicalCenter,
-    )
+    const physicalCenter =
+      this.logicalToPhysicalViewSpace().transformPosition(logicalViewSpaceCenter)
+    const configSpaceCenter =
+      this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalCenter)
     if (!configSpaceCenter) return
 
     const zoomTransform = AffineTransform.withTranslation(configSpaceCenter.times(-1))
@@ -634,14 +629,12 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
       this.onMouseDrag(ev)
       return
     }
-    this.hoveredLabel = null
+
     const logicalViewSpaceMouse = new Vec2(ev.offsetX, ev.offsetY)
-    const physicalViewSpaceMouse = this.logicalToPhysicalViewSpace().transformPosition(
-      logicalViewSpaceMouse,
-    )
-    const configSpaceMouse = this.configSpaceToPhysicalViewSpace().inverseTransformPosition(
-      physicalViewSpaceMouse,
-    )
+    const physicalViewSpaceMouse =
+      this.logicalToPhysicalViewSpace().transformPosition(logicalViewSpaceMouse)
+    const configSpaceMouse =
+      this.configSpaceToPhysicalViewSpace().inverseTransformPosition(physicalViewSpaceMouse)
 
     if (!configSpaceMouse) return
 
@@ -663,6 +656,21 @@ export class FlamechartPanZoomView extends Component<FlamechartPanZoomViewProps,
         setHoveredLabel(child, depth + 1)
       }
     }
+
+    // This is a dumb hack to get around what appears to be a bug in
+    // TypeScript's reachability analysis. If I do the this.hoveredLabel = null
+    // in the outer function body, the code below accessing
+    // this.hoveredLabel!.node inside of the `if (this.hoveredLabel) {`
+    // complains that "no property node on never", indicating that it thinks
+    // that codepath is unreachable.
+    //
+    // Because this.hoveredLabel is accessed in the bound function
+    // setHoveredLabel, the codepath is obviously reachable, but the type
+    // checker is confused about this for some reason.
+    const clearHoveredLabel = () => {
+      this.hoveredLabel = null
+    }
+    clearHoveredLabel()
 
     for (let frame of this.props.flamechart.getLayers()[0] || []) {
       setHoveredLabel(frame)
