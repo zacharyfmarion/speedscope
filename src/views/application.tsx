@@ -156,6 +156,7 @@ export type ApplicationProps = {
   setFlattenRecursion: (flattenRecursion: boolean) => void
   setProfileIndexToView: (profileIndex: number) => void
   activeProfileState: ActiveProfileState | null
+  compareActiveProfileState: ActiveProfileState | null
   canvasContext: CanvasContext | null
   theme: Theme
   profileGroup: ProfileGroupState
@@ -561,7 +562,8 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   renderContent() {
-    const {viewMode, activeProfileState, error, loading, glCanvas} = this.props
+    const {viewMode, activeProfileState, compareActiveProfileState, error, loading, glCanvas} =
+      this.props
 
     if (error) {
       return this.renderError()
@@ -591,6 +593,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
         return (
           <CompareViewContainer
             activeProfileState={activeProfileState}
+            compareActiveProfileState={compareActiveProfileState}
             glCanvas={glCanvas}
             onFileSelect={this.onFileSelect}
           />

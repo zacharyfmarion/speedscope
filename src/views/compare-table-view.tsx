@@ -18,6 +18,7 @@ import {
   searchQueryAtom,
   CompareSortField,
   CompareSortMethod,
+  compareProfileGroupAtom,
 } from '../app-state'
 import {useAtom} from '../lib/atom'
 import {ActiveProfileState} from '../app-state/active-profile-state'
@@ -72,7 +73,7 @@ interface CompareTableRowViewProps {
   index: number
   profile: Profile
   selectedFrame: Frame | null
-  setSelectedFrame: (f: Frame) => void
+  setSelectedDiff: (f: FrameDiff) => void
   getCSSColorForFrame: (frame: Frame) => string
 }
 
@@ -105,7 +106,7 @@ const CompareTableRowView = ({
   profile,
   index,
   selectedFrame,
-  setSelectedFrame,
+  setSelectedDiff,
 }: CompareTableRowViewProps) => {
   const style = getStyle(useTheme())
   const {totalWeightDiff, totalWeightPercentIncrease, selfWeightDiff, selfWeightPercentIncrease} =
@@ -124,7 +125,7 @@ const CompareTableRowView = ({
   return (
     <tr
       key={`${frame.key}`}
-      // onClick={setSelectedFrame.bind(null, frame)}
+      onClick={setSelectedDiff.bind(null, frameDiff)}
       className={css(
         style.tableRow,
         index % 2 == 0 && style.tableRowEven,
@@ -159,7 +160,7 @@ interface CompareTableViewProps {
   selectedFrame: Frame | null
   getCSSColorForFrame: (frame: Frame) => string
   sortMethod: CompareSortMethod
-  setSelectedFrame: (frame: Frame | null) => void
+  setSelectedDiff: (frame: FrameDiff | null) => void
   setSortMethod: (sortMethod: CompareSortMethod) => void
   searchQuery: string
   searchIsActive: boolean
@@ -171,7 +172,7 @@ export const CompareTableView = memo(
     sortMethod,
     setSortMethod,
     selectedFrame,
-    setSelectedFrame,
+    setSelectedDiff,
     getCSSColorForFrame,
     searchQuery,
     searchIsActive,
@@ -233,7 +234,7 @@ export const CompareTableView = memo(
               index: i,
               profile: profile,
               selectedFrame: selectedFrame,
-              setSelectedFrame: setSelectedFrame,
+              setSelectedDiff,
               getCSSColorForFrame: getCSSColorForFrame,
             }),
           )
@@ -264,7 +265,7 @@ export const CompareTableView = memo(
         sandwichContext,
         profile,
         selectedFrame,
-        setSelectedFrame,
+        setSelectedDiff,
         getCSSColorForFrame,
         searchIsActive,
         searchQuery,
@@ -492,9 +493,15 @@ export const CompareTableViewContainer = memo((ownProps: CompareTableViewContain
   const frameToColorBucket = getFrameToColorBucket(profile)
   const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
 
-  const setSelectedFrame = useCallback((selectedFrame: Frame | null) => {
-    profileGroupAtom.setSelectedFrame(selectedFrame)
+  const setSelectedDiff = useCallback((frameDiff: FrameDiff | null) => {
+    if (frameDiff?.beforeFrame) {
+      profileGroupAtom.setSelectedFrame(frameDiff.beforeFrame)
+    }
+    if (frameDiff?.afterFrame) {
+      compareProfileGroupAtom.setSelectedFrame(frameDiff.afterFrame)
+    }
   }, [])
+
   const searchIsActive = useAtom(searchIsActiveAtom)
   const searchQuery = useAtom(searchQueryAtom)
 
@@ -505,7 +512,7 @@ export const CompareTableViewContainer = memo((ownProps: CompareTableViewContain
       selectedFrame={selectedFrame}
       getCSSColorForFrame={getCSSColorForFrame}
       sortMethod={sortMethod}
-      setSelectedFrame={setSelectedFrame}
+      setSelectedDiff={setSelectedDiff}
       setSortMethod={setSortMethod}
       searchIsActive={searchIsActive}
       searchQuery={searchQuery}

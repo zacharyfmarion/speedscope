@@ -1,7 +1,10 @@
 import {h} from 'preact'
 import {getCanvasContext} from '../app-state/getters'
 import {memo, useMemo} from 'preact/compat'
-import {useActiveProfileState} from '../app-state/active-profile-state'
+import {
+  useActiveCompareProfileState,
+  useActiveProfileState,
+} from '../app-state/active-profile-state'
 import {useTheme} from './themes/theme'
 import {
   compareProfileGroupAtom,
@@ -30,6 +33,7 @@ export const ApplicationContainer = memo(() => {
     <ProfileSearchContextProvider>
       <Application
         activeProfileState={useActiveProfileState()}
+        compareActiveProfileState={useActiveCompareProfileState()}
         canvasContext={canvasContext}
         setGLCanvas={glCanvasAtom.set}
         setLoading={loadingAtom.set}

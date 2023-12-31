@@ -1,5 +1,5 @@
-import {h} from 'preact'
-import {memo, useCallback, useContext, useMemo} from 'preact/compat'
+import {JSX, h} from 'preact'
+import {memo, useCallback, useContext, useEffect, useMemo} from 'preact/compat'
 import {ActiveProfileState} from '../app-state/active-profile-state'
 import {useAtom} from '../lib/atom'
 import {
@@ -20,6 +20,8 @@ import {SandwichViewContext, SandwichViewContextData} from './sandwich-view'
 import {ProfileSearchContext} from './search-view'
 import {sortBy} from '../lib/utils'
 import {getFrameDiffs} from '../app-state/getters'
+import {InvertedCallerFlamegraphView} from './inverted-caller-flamegraph-view'
+import {CalleeFlamegraphView} from './callee-flamegraph-view'
 
 type CompareViewProps = {
   profileGroup: ProfileGroupState
@@ -27,7 +29,9 @@ type CompareViewProps = {
   selectedFrame: Frame | null
   profileIndex: number
   theme: Theme
+  glCanvas: HTMLCanvasElement
   activeProfileState: ActiveProfileState
+  compareActiveProfileState: ActiveProfileState
   setSelectedFrame: (selectedFrame: Frame | null) => void
 }
 
@@ -35,23 +39,57 @@ const CompareView = memo(function CompareView({
   profileGroup,
   compareProfileGroup,
   activeProfileState,
+  compareActiveProfileState,
+  selectedFrame,
   theme,
+  glCanvas,
 }: CompareViewProps) {
   const style = getStyle(theme)
-
-  // TODO: Validate that the same pid:tid mapping exiests for both profiles
-  // otherwise error out
-  // For now lets just take the first profiles from both and compare them
-  const {beforeProfile, afterProfile} = useMemo(() => {
-    const beforeProfile = profileGroup!.profiles[0].profile
-    const afterProfile = compareProfileGroup!.profiles[0].profile
-
-    return {beforeProfile, afterProfile}
-  }, [profileGroup, compareProfileGroup])
-
   const frameDiffs = useMemo(() => {
-    return getFrameDiffs(beforeProfile, afterProfile)
-  }, [beforeProfile, afterProfile])
+    return getFrameDiffs(activeProfileState?.profile, compareActiveProfileState?.profile)
+  }, [activeProfileState, compareActiveProfileState])
+
+  let flamegraphViews: JSX.Element | null = null
+
+  const beforeCallerCallee = useMemo(() => {
+    return activeProfileState.sandwichViewState.callerCallee
+  }, [activeProfileState])
+
+  const afterCallerCallee = useMemo(() => {
+    return compareActiveProfileState.sandwichViewState.callerCallee
+  }, [compareActiveProfileState])
+
+  if (selectedFrame) {
+    flamegraphViews = (
+      <div className={css(commonStyle.fillY, style.callersAndCallees, commonStyle.vbox)}>
+        <div className={css(commonStyle.hbox, style.panZoomViewWraper)}>
+          <div className={css(style.flamechartLabelParent)}>
+            <div className={css(style.flamechartLabel)}>Before</div>
+          </div>
+          {beforeCallerCallee && (
+            <CalleeFlamegraphView
+              glCanvas={glCanvas}
+              profile={activeProfileState.profile}
+              callerCallee={beforeCallerCallee}
+            />
+          )}
+        </div>
+        <div className={css(style.divider)} />
+        <div className={css(commonStyle.hbox, style.panZoomViewWraper)}>
+          <div className={css(style.flamechartLabelParent, style.flamechartLabelParentBottom)}>
+            <div className={css(style.flamechartLabel, style.flamechartLabelBottom)}>After</div>
+          </div>
+          {afterCallerCallee && (
+            <CalleeFlamegraphView
+              glCanvas={glCanvas}
+              profile={compareActiveProfileState.profile}
+              callerCallee={afterCallerCallee}
+            />
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={css(commonStyle.hbox, commonStyle.fillY)}>
@@ -62,17 +100,25 @@ const CompareView = memo(function CompareView({
         />
         <SandwichSearchView />
       </div>
+      {flamegraphViews}
     </div>
   )
 })
 
 type CompareViewContainerProps = {
   activeProfileState: ActiveProfileState
+  compareActiveProfileState: ActiveProfileState
   onFileSelect: (ev: Event) => void
+  glCanvas: HTMLCanvasElement
 }
 
 export const CompareViewContainer = memo(
-  ({activeProfileState, onFileSelect}: CompareViewContainerProps) => {
+  ({
+    activeProfileState,
+    compareActiveProfileState,
+    onFileSelect,
+    glCanvas,
+  }: CompareViewContainerProps) => {
     const style = getStyle(useTheme())
     const profileGroup = useAtom(profileGroupAtom)
     const compareProfileGroup = useAtom(compareProfileGroupAtom)
@@ -148,7 +194,8 @@ export const CompareViewContainer = memo(
       getSearchMatchForFrame,
     }
 
-    if (!compareProfileGroup) {
+    // TODO: Deal with importing loading UI
+    if (!compareActiveProfileState) {
       return (
         <div className={css(commonStyle.hbox, commonStyle.fillY, style.landingContainer)}>
           <p className={css(style.landingP)}>Upload a second profile to compare</p>
@@ -172,7 +219,9 @@ export const CompareViewContainer = memo(
       <SandwichViewContext.Provider value={contextData}>
         <CompareView
           theme={theme}
+          glCanvas={glCanvas}
           activeProfileState={activeProfileState}
+          compareActiveProfileState={compareActiveProfileState}
           setSelectedFrame={setSelectedFrame}
           selectedFrame={selectedFrame}
           profileIndex={index}
@@ -218,7 +267,7 @@ const getStyle = withTheme(theme =>
       justifyContent: 'flex-end',
     },
     callersAndCallees: {
-      flex: 1,
+      flex: '2 1 0%',
       borderLeft: `${Sizes.SEPARATOR_HEIGHT}px solid ${theme.fgSecondaryColor}`,
     },
     divider: {
