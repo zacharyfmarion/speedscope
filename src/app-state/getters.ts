@@ -91,6 +91,7 @@ export type FrameDiff = {
   totalWeightPercentIncrease: number
 }
 
+// TODO: Memoize
 export function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): FrameDiff[] {
   const afterKeyMap = afterProfile.getKeyToFrameMap()
   const afterNameMap = afterProfile.getNameToFrameMap()
