@@ -97,10 +97,21 @@ export function formatPercent(percent: number) {
   return formattedPercent
 }
 
+export function formatFullPercent(percent: number) {
+  return `${percent.toFixed(0)}%`
+}
+
+/**
+ * Calculates the fractional part of a given number. For example fract(3.7) returns 0.7
+ */
 export function fract(x: number) {
   return x - Math.floor(x)
 }
 
+/**
+ * Generates a triangle wave that oscillates linearly between -1 and 0 over the
+ * input range with a period of 1
+ */
 export function triangle(x: number) {
   return 2.0 * Math.abs(fract(x) - 0.5) - 1.0
 }
@@ -167,6 +178,10 @@ export function objectsHaveShallowEquality<T extends object>(a: T, b: T): boolea
   return true
 }
 
+/**
+ * Creates a memoized version of a function that caches the result based on
+ * shallow equality of its object argument.
+ */
 export function memoizeByShallowEquality<T extends object, U>(cb: (t: T) => U): (t: T) => U {
   let last: {args: T; result: U} | null = null
   return (args: T) => {
@@ -185,6 +200,10 @@ export function memoizeByShallowEquality<T extends object, U>(cb: (t: T) => U): 
   }
 }
 
+/**
+ * Creates a memoized version of a function that caches the result based on
+ * the reference equality of its argument.
+ */
 export function memoizeByReference<T, U>(cb: (t: T) => U): (t: T) => U {
   let last: {args: T; result: U} | null = null
   return (args: T) => {

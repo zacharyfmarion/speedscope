@@ -20,6 +20,9 @@ export const viewModeAtom = new Atom<ViewMode>(ViewMode.CHRONO_FLAME_CHART, 'vie
 // The top-level profile group from which most other data will be derived
 export const profileGroupAtom = new ProfileGroupAtom(null, 'profileGroup')
 
+// The top-level profile group from which most other data will be derived
+export const compareProfileGroupAtom = new ProfileGroupAtom(null, 'compareProfileGroup')
+
 viewModeAtom.subscribe(() => {
   // If we switch views, the hover information is no longer relevant
   profileGroupAtom.clearHoverNode()
@@ -57,6 +60,12 @@ export enum SortField {
   TOTAL,
 }
 
+export enum CompareSortField {
+  SYMBOL_NAME,
+  SELF_CHANGE,
+  TOTAL_CHANGE,
+}
+
 export enum SortDirection {
   ASCENDING,
   DESCENDING,
@@ -64,6 +73,11 @@ export enum SortDirection {
 
 export interface SortMethod {
   field: SortField
+  direction: SortDirection
+}
+
+export interface CompareSortMethod {
+  field: CompareSortField
   direction: SortDirection
 }
 

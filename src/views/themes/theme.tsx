@@ -27,6 +27,9 @@ export interface Theme {
   searchMatchPrimaryColor: string
   searchMatchSecondaryColor: string
 
+  negative: string
+  positive: string
+
   colorForBucket: (t: number) => Color
   colorForBucketGLSL: string
 }
@@ -95,5 +98,6 @@ export function ThemeProvider(props: {children: ComponentChildren}) {
 
   const colorScheme = useAtom(colorSchemeAtom)
   const theme = getTheme(colorScheme, systemPrefersDarkMode)
+
   return <ThemeContext.Provider value={theme} children={props.children} />
 }

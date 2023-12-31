@@ -17,7 +17,7 @@ import {memo, useCallback} from 'preact/compat'
 import {ActiveProfileState} from '../app-state/active-profile-state'
 import {FlamechartSearchContextProvider} from './flamechart-search-view'
 import {Theme, useTheme} from './themes/theme'
-import {FlamechartID, FlamechartViewState} from '../app-state/profile-group'
+import {FlamechartID, FlamechartViewState, ProfileGroupAtom} from '../app-state/profile-group'
 import {profileGroupAtom} from '../app-state'
 
 interface FlamechartSetters {
@@ -27,31 +27,34 @@ interface FlamechartSetters {
   setSelectedNode: (node: CallTreeNode | null) => void
 }
 
-export function useFlamechartSetters(id: FlamechartID): FlamechartSetters {
+export function useFlamechartSetters(
+  id: FlamechartID,
+  atom: ProfileGroupAtom = profileGroupAtom,
+): FlamechartSetters {
   return {
     setNodeHover: useCallback(
       (hover: {node: CallTreeNode; event: MouseEvent} | null) => {
-        profileGroupAtom.setFlamechartHoveredNode(id, hover)
+        atom.setFlamechartHoveredNode(id, hover)
       },
-      [id],
+      [atom, id],
     ),
     setLogicalSpaceViewportSize: useCallback(
       (logicalSpaceViewportSize: Vec2) => {
-        profileGroupAtom.setLogicalSpaceViewportSize(id, logicalSpaceViewportSize)
+        atom.setLogicalSpaceViewportSize(id, logicalSpaceViewportSize)
       },
-      [id],
+      [atom, id],
     ),
     setConfigSpaceViewportRect: useCallback(
       (configSpaceViewportRect: Rect) => {
-        profileGroupAtom.setConfigSpaceViewportRect(id, configSpaceViewportRect)
+        atom.setConfigSpaceViewportRect(id, configSpaceViewportRect)
       },
-      [id],
+      [atom, id],
     ),
     setSelectedNode: useCallback(
       (selectedNode: CallTreeNode | null) => {
-        profileGroupAtom.setSelectedNode(id, selectedNode)
+        atom.setSelectedNode(id, selectedNode)
       },
-      [id],
+      [atom, id],
     ),
   }
 }
