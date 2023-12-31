@@ -16,7 +16,7 @@ import {FlamechartWrapper} from './flamechart-wrapper'
 import {h} from 'preact'
 import {memo} from 'preact/compat'
 import {useTheme} from './themes/theme'
-import {CallerCalleeState, FlamechartID} from '../app-state/profile-group'
+import {FlamechartID} from '../app-state/profile-group'
 import {flattenRecursionAtom, glCanvasAtom} from '../app-state'
 import {useAtom} from '../lib/atom'
 
@@ -54,51 +54,46 @@ const getInvertedCallerFlamegraph = memoizeByShallowEquality(
 
 const getInvertedCallerFlamegraphRenderer = createMemoizedFlamechartRenderer({inverted: true})
 
-type InvertedCallerFlamegraphViewProps = {
-  profile: Profile
-  callerCallee: CallerCalleeState
-}
+export const InvertedCallerFlamegraphView = memo((ownProps: FlamechartViewContainerProps) => {
+  const {activeProfileState} = ownProps
+  let {profile, sandwichViewState} = activeProfileState
+  const flattenRecursion = useAtom(flattenRecursionAtom)
+  const glCanvas = useAtom(glCanvasAtom)
+  const theme = useTheme()
 
-export const InvertedCallerFlamegraphView = memo(
-  ({profile, callerCallee}: InvertedCallerFlamegraphViewProps) => {
-    const flattenRecursion = useAtom(flattenRecursionAtom)
-    const glCanvas = useAtom(glCanvasAtom)
-    const theme = useTheme()
+  if (!profile) throw new Error('profile missing')
+  if (!glCanvas) throw new Error('glCanvas missing')
+  const {callerCallee} = sandwichViewState
+  if (!callerCallee) throw new Error('callerCallee missing')
+  const {selectedFrame} = callerCallee
 
-    if (!profile) throw new Error('profile missing')
-    if (!glCanvas) throw new Error('glCanvas missing')
-    if (!callerCallee) throw new Error('callerCallee missing')
+  const frameToColorBucket = getFrameToColorBucket(profile)
+  const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
+  const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
+  const canvasContext = getCanvasContext({theme, canvas: glCanvas})
 
-    const {selectedFrame} = callerCallee
+  const flamechart = getInvertedCallerFlamegraph({
+    invertedCallerProfile: getInvertedCallerProfile({
+      profile,
+      frame: selectedFrame,
+      flattenRecursion,
+    }),
+    getColorBucketForFrame,
+  })
+  const flamechartRenderer = getInvertedCallerFlamegraphRenderer({canvasContext, flamechart})
 
-    const frameToColorBucket = getFrameToColorBucket(profile)
-    const getColorBucketForFrame = createGetColorBucketForFrame(frameToColorBucket)
-    const getCSSColorForFrame = createGetCSSColorForFrame({theme, frameToColorBucket})
-    const canvasContext = getCanvasContext({theme, canvas: glCanvas})
-
-    const flamechart = getInvertedCallerFlamegraph({
-      invertedCallerProfile: getInvertedCallerProfile({
-        profile,
-        frame: selectedFrame,
-        flattenRecursion,
-      }),
-      getColorBucketForFrame,
-    })
-    const flamechartRenderer = getInvertedCallerFlamegraphRenderer({canvasContext, flamechart})
-
-    return (
-      <FlamechartWrapper
-        theme={theme}
-        renderInverted={true}
-        flamechart={flamechart}
-        flamechartRenderer={flamechartRenderer}
-        canvasContext={canvasContext}
-        getCSSColorForFrame={getCSSColorForFrame}
-        {...useFlamechartSetters(FlamechartID.SANDWICH_INVERTED_CALLERS)}
-        {...callerCallee.invertedCallerFlamegraph}
-        // This overrides the setSelectedNode specified in useFlamechartSettesr
-        setSelectedNode={noop}
-      />
-    )
-  },
-)
+  return (
+    <FlamechartWrapper
+      theme={theme}
+      renderInverted={true}
+      flamechart={flamechart}
+      flamechartRenderer={flamechartRenderer}
+      canvasContext={canvasContext}
+      getCSSColorForFrame={getCSSColorForFrame}
+      {...useFlamechartSetters(FlamechartID.SANDWICH_INVERTED_CALLERS)}
+      {...callerCallee.invertedCallerFlamegraph}
+      // This overrides the setSelectedNode specified in useFlamechartSettesr
+      setSelectedNode={noop}
+    />
+  )
+})

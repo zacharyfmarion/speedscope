@@ -1,7 +1,6 @@
 import {Color} from '../../lib/color'
 import {triangle} from '../../lib/utils'
 import {Theme} from './theme'
-import {compareColorForBucket, compareColorForBucketGLSL} from './compare-theme'
 
 // These colors are intentionally not exported from this file, because these
 // colors are theme specific, and we want all color values to come from the
@@ -33,7 +32,6 @@ const colorForBucket = (t: number) => {
   const L = L_0 - L_d * x
   return Color.fromLumaChromaHue(L, C, H)
 }
-
 const colorForBucketGLSL = `
   vec3 colorForBucket(float t) {
     float x = triangle(30.0 * t);
@@ -68,10 +66,4 @@ export const darkTheme: Theme = {
 
   colorForBucket,
   colorForBucketGLSL,
-}
-
-export const darkCompareTheme: Theme = {
-  ...darkTheme,
-  colorForBucket: compareColorForBucket,
-  colorForBucketGLSL: compareColorForBucketGLSL,
 }

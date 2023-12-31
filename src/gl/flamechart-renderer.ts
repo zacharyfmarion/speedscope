@@ -122,7 +122,6 @@ export class FlamechartRowAtlasKey {
 
 export interface FlamechartRendererOptions {
   inverted: boolean
-  isCompareView?: boolean
 }
 
 export class FlamechartRenderer {
@@ -134,7 +133,7 @@ export class FlamechartRenderer {
     private flamechart: Flamechart,
     private rectangleBatchRenderer: RectangleBatchRenderer,
     private colorPassRenderer: FlamechartColorPassRenderer,
-    private options: FlamechartRendererOptions = {inverted: false, isCompareView: false},
+    private options: FlamechartRendererOptions = {inverted: false},
   ) {
     const nLayers = flamechart.getLayers().length
     for (let stackDepth = 0; stackDepth < nLayers; stackDepth++) {
@@ -170,17 +169,16 @@ export class FlamechartRenderer {
         minLeft = Math.min(minLeft, configSpaceBounds.left())
         maxRight = Math.max(maxRight, configSpaceBounds.right())
 
-        const colorChannel = this.options.isCompareView
-          ? this.flamechart.getColorBucketForFrame(frame.node.frame)
-          : (1 + this.flamechart.getColorBucketForFrame(frame.node.frame)) / 256
-
-        // NOTE: I don't love this, it's confusing to overload this class
         // We'll use the red channel to indicate the index to allow
         // us to separate adjacent rectangles within a row from one another,
         // the green channel to indicate the row,
         // and the blue channel to indicate the color bucket to render.
         // We add one to each so we have zero reserved for the background color.
-        const color = new Color((1 + (i % 255)) / 256, (1 + (stackDepth % 255)) / 256, colorChannel)
+        const color = new Color(
+          (1 + (i % 255)) / 256,
+          (1 + (stackDepth % 255)) / 256,
+          (1 + this.flamechart.getColorBucketForFrame(frame.node.frame)) / 256,
+        )
         batch.addRect(configSpaceBounds, color)
         rectCount++
       }
