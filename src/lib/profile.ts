@@ -283,16 +283,19 @@ export class Profile {
     this.frames.forEach(fn)
   }
 
-  // TODO: I'm sure there is a better way to do this, + we should memoize
-  // and only do this work once
-  getKeyToFrameMap() {
-    const map = new Map<string | number, Frame>()
+  private keyToFrameMap: Map<string | number, Frame> | undefined
+  getKeyToFrameMap(): Map<string | number, Frame> {
+    if (!this.keyToFrameMap) {
+      const map = new Map<string | number, Frame>()
 
-    this.forEachFrame(f => {
-      map.set(f.key, f)
-    })
+      this.forEachFrame(f => {
+        map.set(f.key, f)
+      })
 
-    return map
+      this.keyToFrameMap = map
+    }
+
+    return this.keyToFrameMap
   }
 
   /**
@@ -300,16 +303,20 @@ export class Profile {
    * is not unique, unlike the key is supposed to be, so mutliple frames can
    * be mapped to each function name
    */
-  getNameToFrameMap() {
-    const map = new Map<string | number, Frame[]>()
+  private nameToFrameMap: Map<string | number, Frame[]> | undefined
+  getNameToFrameMap(): Map<string | number, Frame[]> {
+    if (!this.nameToFrameMap) {
+      const map = new Map<string | number, Frame[]>()
 
-    this.forEachFrame(f => {
-      const frames = map.get(f.name) || []
-      frames.push(f)
-      map.set(f.name, frames)
-    })
+      this.forEachFrame(f => {
+        const frames = map.get(f.name) || []
+        frames.push(f)
+        map.set(f.name, frames)
+      })
 
-    return map
+      this.nameToFrameMap = map
+    }
+    return this.nameToFrameMap
   }
 
   getProfileWithRecursionFlattened(): Profile {

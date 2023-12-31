@@ -140,58 +140,6 @@ export function getFrameDiffs(beforeProfile: Profile, afterProfile: Profile): Fr
   return frameDiffs
 }
 
-/**
- * Ensures that all frame diffs sit between 0.1 and 0.9.
- * Anything larger than 0.5 is a percent increase, anything smaller is a
- * percent decrease
- */
-function normalizeFrameDiffs(frameDiffs: FrameDiff[]): FrameDiff[] {
-  // Map from [-1,1] to [0.1, 0.9]
-  function mapToOutputRange(diff: number) {
-    return ((diff + 1) / 2) * 0.8 + 0.1
-  }
-
-  // Normalize the differences, scaling down a bit further
-  return frameDiffs.map(fd => ({
-    ...fd,
-    selfWeightPercentIncrease: mapToOutputRange(fd.selfWeightPercentIncrease),
-    totalWeightPercentIncrease: mapToOutputRange(fd.totalWeightPercentIncrease),
-  }))
-}
-
-// TODO: Make this configurable in the UI
-const COMPARE_THRESHOLD = 0
-
-export const getFrameToColorBucketCompare = (
-  beforeProfile: Profile,
-  afterProfile: Profile,
-): Map<string | number, number> => {
-  const frameDiffs = getFrameDiffs(beforeProfile, afterProfile)
-  const scaledDiffs = normalizeFrameDiffs(frameDiffs)
-
-  const frameToColorBucket = new Map<string | number, number>()
-
-  scaledDiffs.forEach(
-    ({
-      beforeFrame,
-      afterFrame,
-      totalWeightDiff,
-      selfWeightDiff,
-      selfWeightPercentIncrease,
-      totalWeightPercentIncrease,
-    }) => {
-      // TODO: Deal with self vs total weight with a state variable
-      // Also a variable for whether to go by percent increase / decrease vs ns diff
-      // that is surfaced in the UI
-      // const value = Math.abs(totalWeightDiff) > COMPARE_THRESHOLD ? totalWeightPercentIncrease : 0.5
-      const value = Math.abs(selfWeightDiff) > COMPARE_THRESHOLD ? totalWeightPercentIncrease : 0.5
-      frameToColorBucket.set(beforeFrame.key, value)
-    },
-  )
-
-  return frameToColorBucket
-}
-
 export const getFrameToColorBucket = memoizeByReference(
   (profile: Profile): Map<string | number, number> => {
     const frames: Frame[] = []
