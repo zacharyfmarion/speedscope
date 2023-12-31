@@ -50,7 +50,7 @@ const getCalleeFlamegraphRenderer = createMemoizedFlamechartRenderer()
 
 type CalleeFlamegraphViewProps = {
   profile: Profile
-  callerCallee: CallerCalleeState
+  callerCallee: CallerCalleeState | null
   flamechartId?: FlamechartID
   getTotalWeight?: () => number
   // TODO: I don't like overloading this word

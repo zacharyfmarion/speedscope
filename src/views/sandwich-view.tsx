@@ -46,8 +46,11 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
   render() {
     const style = getStyle(this.props.theme)
 
-    const {selectedFrame} = this.props
+    const {selectedFrame, activeProfileState} = this.props
     let flamegraphViews: JSX.Element | null = null
+
+    const {profile, sandwichViewState} = activeProfileState
+    const {callerCallee} = sandwichViewState
 
     if (selectedFrame) {
       flamegraphViews = (
@@ -67,8 +70,9 @@ class SandwichView extends StatelessComponent<SandwichViewProps> {
               <div className={css(style.flamechartLabel, style.flamechartLabelBottom)}>Callees</div>
             </div>
             <CalleeFlamegraphView
-              glCanvas={this.props.glCanvas}
-              activeProfileState={this.props.activeProfileState}
+              profile={profile}
+              callerCallee={callerCallee}
+              profileGroupAtom={profileGroupAtom}
             />
           </div>
         </div>

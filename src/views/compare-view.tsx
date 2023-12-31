@@ -29,7 +29,6 @@ type CompareViewProps = {
   selectedFrame: Frame | null
   profileIndex: number
   theme: Theme
-  glCanvas: HTMLCanvasElement
   activeProfileState: ActiveProfileState
   compareActiveProfileState: ActiveProfileState
   setSelectedFrame: (selectedFrame: Frame | null) => void
@@ -40,8 +39,20 @@ const CompareView = memo(function CompareView({
   compareActiveProfileState,
   selectedFrame,
   theme,
-  glCanvas,
 }: CompareViewProps) {
+  // TODO: Abstract this into a hook
+  useEffect(() => {
+    function handleEscapeKeyPres(ev: KeyboardEvent) {
+      if (ev.key === 'Escape') {
+        profileGroupAtom.setSelectedFrame(null)
+        compareProfileGroupAtom.setSelectedFrame(null)
+      }
+    }
+
+    window.addEventListener('keydown', handleEscapeKeyPres)
+    return () => window.removeEventListener('keydown', handleEscapeKeyPres)
+  }, [])
+
   const style = getStyle(theme)
 
   const {beforeProfile, afterProfile} = useMemo(() => {
@@ -160,12 +171,7 @@ type CompareViewContainerProps = {
 }
 
 export const CompareViewContainer = memo(
-  ({
-    activeProfileState,
-    compareActiveProfileState,
-    onFileSelect,
-    glCanvas,
-  }: CompareViewContainerProps) => {
+  ({activeProfileState, compareActiveProfileState, onFileSelect}: CompareViewContainerProps) => {
     const style = getStyle(useTheme())
 
     const {sandwichViewState, index} = activeProfileState
@@ -265,7 +271,6 @@ export const CompareViewContainer = memo(
       <SandwichViewContext.Provider value={contextData}>
         <CompareView
           theme={theme}
-          glCanvas={glCanvas}
           activeProfileState={activeProfileState}
           compareActiveProfileState={compareActiveProfileState}
           setSelectedFrame={setSelectedFrame}
