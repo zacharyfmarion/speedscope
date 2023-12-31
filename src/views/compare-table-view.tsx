@@ -82,6 +82,9 @@ interface CompareTableRowViewProps {
   selectedFrame: Frame | null
   setSelectedDiff: (f: FrameDiff) => void
   getCSSColorForFrame: (frame: Frame) => string
+  // TODO: These names are a bit unclear
+  selfPercent: number
+  totalPercent: number
 }
 
 function highlightRanges(
@@ -114,6 +117,8 @@ const CompareTableRowView = ({
   index,
   selectedFrame,
   setSelectedDiff,
+  selfPercent,
+  totalPercent,
 }: CompareTableRowViewProps) => {
   const theme = useTheme()
   const style = getStyle(theme)
@@ -139,12 +144,12 @@ const CompareTableRowView = ({
       <td className={css(style.numericCell)}>
         {profile.formatValue(totalWeightDiff)} (
         {formatPercent(Math.abs(totalWeightPercentIncrease * 100))})
-        <HBarDisplay percent={totalWeightPercentIncrease * 100} />
+        <HBarDisplay percent={totalPercent} />
       </td>
       <td className={css(style.numericCell)}>
         {profile.formatValue(selfWeightDiff)} (
         {formatPercent(Math.abs(selfWeightPercentIncrease * 100))})
-        <HBarDisplay percent={selfWeightPercentIncrease * 100} />
+        <HBarDisplay percent={selfPercent} />
       </td>
       <td title={frame.file} className={css(style.textCell)}>
         <ColorChit color={getCSSColorForDiff(totalWeightDiff, theme)} />
@@ -185,6 +190,14 @@ export const CompareTableView = memo(
     frameDiffs,
   }: CompareTableViewProps) => {
     const style = getStyle(useTheme())
+
+    const largestTotalDiff = useMemo(() => {
+      return frameDiffs.reduce((acc, diff) => Math.max(Math.abs(diff.totalWeightDiff), acc), 0)
+    }, [frameDiffs])
+
+    const largestSelfDiff = useMemo(() => {
+      return frameDiffs.reduce((acc, diff) => Math.max(Math.abs(diff.selfWeightDiff), acc), 0)
+    }, [frameDiffs])
 
     const onSortClick = useCallback(
       (field: CompareSortField, ev: MouseEvent) => {
@@ -239,6 +252,8 @@ export const CompareTableView = memo(
               selectedFrame: selectedFrame,
               setSelectedDiff,
               getCSSColorForFrame: getCSSColorForFrame,
+              totalPercent: (frameDiff.totalWeightDiff / largestTotalDiff) * 100,
+              selfPercent: (frameDiff.selfWeightDiff / largestSelfDiff) * 100,
             }),
           )
         }
@@ -274,6 +289,8 @@ export const CompareTableView = memo(
         searchQuery,
         style.emptyState,
         style.tableView,
+        largestSelfDiff,
+        largestTotalDiff,
       ],
     )
 
