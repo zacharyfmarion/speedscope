@@ -600,6 +600,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   render() {
+    console.log('RENDERING')
     const style = this.getStyle()
     return (
       <div

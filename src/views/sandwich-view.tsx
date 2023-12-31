@@ -135,7 +135,7 @@ interface SandwichViewContainerProps {
   glCanvas: HTMLCanvasElement
 }
 
-interface SandwichViewContextData {
+export interface SandwichViewContextData {
   rowList: Frame[]
   selectedFrame: Frame | null
   setSelectedFrame: (frame: Frame | null) => void
