@@ -90,6 +90,14 @@ export class CallTreeNode extends HasWeights {
     return this.frame === Frame.root
   }
 
+  key() {
+    return this.frame.key
+  }
+
+  weight() {
+    return this.frame.getSelfWeight()
+  }
+
   // If a node is "frozen", it means it should no longer be mutated.
   private frozen = false
   isFrozen() {
@@ -273,6 +281,42 @@ export class Profile {
 
   forEachFrame(fn: (frame: Frame) => void) {
     this.frames.forEach(fn)
+  }
+
+  private keyToFrameMap: Map<string | number, Frame> | undefined
+  getKeyToFrameMap(): Map<string | number, Frame> {
+    if (!this.keyToFrameMap) {
+      const map = new Map<string | number, Frame>()
+
+      this.forEachFrame(f => {
+        map.set(f.key, f)
+      })
+
+      this.keyToFrameMap = map
+    }
+
+    return this.keyToFrameMap
+  }
+
+  /**
+   * Get a map of the frame name to an array of frames. The frame name
+   * is not unique, unlike the key is supposed to be, so mutliple frames can
+   * be mapped to each function name
+   */
+  private nameToFrameMap: Map<string | number, Frame[]> | undefined
+  getNameToFrameMap(): Map<string | number, Frame[]> {
+    if (!this.nameToFrameMap) {
+      const map = new Map<string | number, Frame[]>()
+
+      this.forEachFrame(f => {
+        const frames = map.get(f.name) || []
+        frames.push(f)
+        map.set(f.name, frames)
+      })
+
+      this.nameToFrameMap = map
+    }
+    return this.nameToFrameMap
   }
 
   getProfileWithRecursionFlattened(): Profile {

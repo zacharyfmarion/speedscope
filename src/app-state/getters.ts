@@ -48,6 +48,7 @@ export const getProfileToView = memoizeByShallowEquality(
     return flattenRecursion ? profile.getProfileWithRecursionFlattened() : profile
   },
 )
+
 export const getFrameToColorBucket = memoizeByReference(
   (profile: Profile): Map<string | number, number> => {
     const frames: Frame[] = []

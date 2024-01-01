@@ -2,7 +2,7 @@ import {h} from 'preact'
 import {StyleSheet, css} from 'aphrodite'
 
 import {ProfileGroup, SymbolRemapper} from '../lib/profile'
-import {FontFamily, FontSize, Duration} from './style'
+import {FontFamily, FontSize, Duration, commonStyle} from './style'
 import {importEmscriptenSymbolMap as importEmscriptenSymbolRemapper} from '../lib/emscripten'
 import {SandwichViewContainer} from './sandwich-view'
 import {saveToFile} from '../lib/file-format'
@@ -17,6 +17,7 @@ import {canUseXHR} from '../app-state'
 import {ProfileGroupState} from '../app-state/profile-group'
 import {HashParams} from '../lib/hash-params'
 import {StatelessComponent} from '../lib/preact-helpers'
+import {CompareViewContainer} from './compare-view'
 
 const importModule = import('../import')
 
@@ -149,11 +150,13 @@ export type ApplicationProps = {
   setLoading: (loading: boolean) => void
   setError: (error: boolean) => void
   setProfileGroup: (profileGroup: ProfileGroup) => void
+  setCompareProfileGroup: (profileGroup: ProfileGroup) => void
   setDragActive: (dragActive: boolean) => void
   setViewMode: (viewMode: ViewMode) => void
   setFlattenRecursion: (flattenRecursion: boolean) => void
   setProfileIndexToView: (profileIndex: number) => void
   activeProfileState: ActiveProfileState | null
+  compareActiveProfileState: ActiveProfileState | null
   canvasContext: CanvasContext | null
   theme: Theme
   profileGroup: ProfileGroupState
@@ -218,7 +221,11 @@ export class Application extends StatelessComponent<ApplicationProps> {
 
     console.timeEnd('import')
 
-    this.props.setProfileGroup(profileGroup)
+    if (this.props.viewMode === ViewMode.COMPARE_VIEW) {
+      this.props.setCompareProfileGroup(profileGroup)
+    } else {
+      this.props.setProfileGroup(profileGroup)
+    }
     this.props.setLoading(false)
   }
 
@@ -349,6 +356,8 @@ export class Application extends StatelessComponent<ApplicationProps> {
       this.props.setViewMode(ViewMode.LEFT_HEAVY_FLAME_GRAPH)
     } else if (ev.key === '3') {
       this.props.setViewMode(ViewMode.SANDWICH_VIEW)
+    } else if (ev.key === '4') {
+      this.props.setViewMode(ViewMode.COMPARE_VIEW)
     } else if (ev.key === 'r') {
       const {flattenRecursion} = this.props
       this.props.setFlattenRecursion(!flattenRecursion)
@@ -500,7 +509,7 @@ export class Application extends StatelessComponent<ApplicationProps> {
               name="file"
               id="file"
               onChange={this.onFileSelect}
-              className={css(style.hide)}
+              className={css(commonStyle.hide)}
             />
             <label for="file" className={css(style.browseButton)} tabIndex={0}>
               Browse
@@ -553,7 +562,8 @@ export class Application extends StatelessComponent<ApplicationProps> {
   }
 
   renderContent() {
-    const {viewMode, activeProfileState, error, loading, glCanvas} = this.props
+    const {viewMode, activeProfileState, compareActiveProfileState, error, loading, glCanvas} =
+      this.props
 
     if (error) {
       return this.renderError()
@@ -578,6 +588,16 @@ export class Application extends StatelessComponent<ApplicationProps> {
       }
       case ViewMode.SANDWICH_VIEW: {
         return <SandwichViewContainer activeProfileState={activeProfileState} glCanvas={glCanvas} />
+      }
+      case ViewMode.COMPARE_VIEW: {
+        return (
+          <CompareViewContainer
+            activeProfileState={activeProfileState}
+            compareActiveProfileState={compareActiveProfileState}
+            glCanvas={glCanvas}
+            onFileSelect={this.onFileSelect}
+          />
+        )
       }
     }
   }
@@ -684,9 +704,6 @@ const getStyle = withTheme(theme =>
     },
     landingP: {
       marginBottom: 16,
-    },
-    hide: {
-      display: 'none',
     },
     browseButtonContainer: {
       display: 'flex',
