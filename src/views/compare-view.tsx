@@ -1,15 +1,8 @@
 import {JSX, h} from 'preact'
 import {memo, useCallback, useContext, useEffect, useMemo} from 'preact/compat'
-import {ActiveProfileState, useActiveCompareProfileState} from '../app-state/active-profile-state'
+import {ActiveProfileState} from '../app-state/active-profile-state'
 import {useAtom} from '../lib/atom'
-import {
-  SortDirection,
-  SortField,
-  compareProfileGroupAtom,
-  flattenRecursionAtom,
-  profileGroupAtom,
-  tableSortMethodAtom,
-} from '../app-state'
+import {compareProfileGroupAtom, flattenRecursionAtom, profileGroupAtom} from '../app-state'
 import {Theme, useTheme, withTheme} from './themes/theme'
 import {Duration, FontSize, Sizes, commonStyle} from './style'
 import {StyleSheet, css} from 'aphrodite'
@@ -18,7 +11,6 @@ import {SandwichSearchView} from './sandwich-search-view'
 import {CompareTableViewContainer} from './compare-table-view'
 import {SandwichViewContext, SandwichViewContextData} from './sandwich-view'
 import {ProfileSearchContext} from './search-view'
-import {sortBy} from '../lib/utils'
 import {CalleeFlamegraphView, getCalleeProfile} from './callee-flamegraph-view'
 import {getFrameDiffs} from '../lib/frameDiffs'
 
@@ -173,44 +165,17 @@ export const CompareViewContainer = memo(
       profileGroupAtom.setSelectedFrame(selectedFrame)
     }, [])
 
-    const profile = activeProfileState.profile
-    const tableSortMethod = useAtom(tableSortMethodAtom)
     const profileSearchResults = useContext(ProfileSearchContext)
 
     const selectedFrame =
       sandwichViewState.callerCallee?.selectedFrame ??
-      compareActiveProfileState?.sandwichViewState?.callerCallee?.selectedFrame
+      compareActiveProfileState?.sandwichViewState?.callerCallee?.selectedFrame ??
+      null
 
+    // TODO: Refactor this, right now it is unused but just needed to supply context
     const rowList: Frame[] = useMemo(() => {
-      const rowList: Frame[] = []
-
-      profile.forEachFrame(frame => {
-        if (profileSearchResults && !profileSearchResults.getMatchForFrame(frame)) {
-          return
-        }
-        rowList.push(frame)
-      })
-
-      switch (tableSortMethod.field) {
-        case SortField.SYMBOL_NAME: {
-          sortBy(rowList, f => f.name.toLowerCase())
-          break
-        }
-        case SortField.SELF: {
-          sortBy(rowList, f => f.getSelfWeight())
-          break
-        }
-        case SortField.TOTAL: {
-          sortBy(rowList, f => f.getTotalWeight())
-          break
-        }
-      }
-      if (tableSortMethod.direction === SortDirection.DESCENDING) {
-        rowList.reverse()
-      }
-
-      return rowList
-    }, [profile, profileSearchResults, tableSortMethod])
+      return []
+    }, [])
 
     const getIndexForFrame: (frame: Frame) => number | null = useMemo(() => {
       const indexByFrame = new Map<Frame, number>()

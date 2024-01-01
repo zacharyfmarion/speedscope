@@ -473,7 +473,7 @@ export const CompareTableViewContainer = memo((ownProps: CompareTableViewContain
   const profileSearchResults = useContext(ProfileSearchContext)
 
   const [sortMethod, setSortMethod] = useState({
-    field: CompareSortField.TOTAL_CHANGE,
+    field: CompareSortField.SELF_CHANGE,
     direction: SortDirection.DESCENDING,
   })
 
